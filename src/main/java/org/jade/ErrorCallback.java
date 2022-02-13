@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class ErrorCallback extends GLFWErrorCallback {
 
-  private static final Logger logger = LoggerFactory.getLogger(Window.class);
+  private static final Logger logger = LoggerFactory.getLogger(ErrorCallback.class);
 
   private final Map<Integer, String> ERROR_CODES;
 

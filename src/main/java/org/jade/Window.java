@@ -37,6 +37,8 @@ public class Window {
 
   private static final Logger logger = LoggerFactory.getLogger(Window.class);
 
+  public static boolean faulty = false;
+
   private long windowHandle;
   private int w, h;
   private String title;
@@ -65,7 +67,6 @@ public class Window {
 
     // Setup an error callback. The default implementation
     // will print the error message in System.err.
-//    GLFWErrorCallback.createPrint(System.err).set();
     glfwSetErrorCallback(new ErrorCallback());
 
 
@@ -81,9 +82,11 @@ public class Window {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE); // full window
 
-    // request an impossible version of openGL
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 99);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if (faulty) {
+      // request an impossible version of openGL
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 99);
+      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    }
 
     // create window
     windowHandle = glfwCreateWindow(w, h, title, NULL, NULL);
