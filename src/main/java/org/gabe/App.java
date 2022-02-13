@@ -1,6 +1,6 @@
 package org.gabe;
 
-import org.gabe.jade.Window;
+import org.jade.Window;
 
 public class App
 {

@@ -1,8 +1,11 @@
-package org.gabe.jade;
+package org.jade;
 
 
+import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
 import static org.lwjgl.glfw.GLFW.GLFW_MAXIMIZED;
+import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
+import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
@@ -11,6 +14,7 @@ import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
@@ -61,7 +65,9 @@ public class Window {
 
     // Setup an error callback. The default implementation
     // will print the error message in System.err.
-    GLFWErrorCallback.createPrint(System.err).set();
+//    GLFWErrorCallback.createPrint(System.err).set();
+    glfwSetErrorCallback(new ErrorCallback());
+
 
 
     // Initialize GLFW. Most GLFW functions will not work before doing this.
@@ -75,6 +81,9 @@ public class Window {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE); // full window
 
+    // request an impossible version of openGL
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 99);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // create window
     windowHandle = glfwCreateWindow(w, h, title, NULL, NULL);
@@ -87,6 +96,14 @@ public class Window {
     // Make the OpenGL the current context for the window
     glfwMakeContextCurrent(windowHandle);
     // Enable v-sync
+
+    /*
+    * The swap interval indicates how many frames to wait until swapping the buffers,
+    * commonly known as vsync.
+    * By default, the swap interval is zero, meaning buffer swapping will occur immediately.
+    * On fast machines, many of those frames will never be seen, as the screen is still
+    * only updated typically 60-75 times per second, so this wastes a lot of CPU and GPU cycles.
+    */
     glfwSwapInterval(1);
 
     // Make the window visible
