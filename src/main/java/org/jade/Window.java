@@ -4,7 +4,9 @@ package org.jade;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_MAXIMIZED;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
@@ -19,7 +21,11 @@ import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
@@ -71,29 +77,15 @@ public class Window {
     init();
     loop();
 
-    // Free the window and associated callbacks
-    glfwFreeCallbacks(windowHandle);
-    glfwDestroyWindow(windowHandle);
-
-    // Terminate GLFW and free the separate error callback
-    glfwTerminate();
-    try {
-      Objects.requireNonNull(glfwSetErrorCallback(null)).free();
-    } catch (Exception e) {
-      logger.error("cannot free error callback");
-    }
+    cleanup();
 
   }
 
+
   private void init() {
 
-    // TODO see how to connect to slf4j
-
-    // Setup an error callback. The default implementation
-    // will print the error message in System.err.
+    // Setup an error callback.
     glfwSetErrorCallback(new ErrorCallback());
-
-
 
     // Initialize GLFW. Most GLFW functions will not work before doing this.
     if ( !glfwInit() )
@@ -127,6 +119,13 @@ public class Window {
 
     if ( windowHandle == NULL )
       throw new RuntimeException("Failed to create the GLFW window");
+
+    // mouse callbacks
+    glfwSetCursorPosCallback(windowHandle, MouseListener::mousePosCallback);
+    glfwSetMouseButtonCallback(windowHandle, MouseListener::mouseButtonCallback);
+    glfwSetScrollCallback(windowHandle, MouseListener::mouseScrollCallback);
+    // key callback
+    glfwSetKeyCallback(windowHandle, KeyListener::keyCallback);
 
     // Get the thread stack and push a new frame
     try ( MemoryStack stack = stackPush() ) {
@@ -179,8 +178,38 @@ public class Window {
       glClear(GL_COLOR_BUFFER_BIT); // clear the frame buffer
 
       glfwSwapBuffers(windowHandle); // swap the color buffers
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
+        logger.info("space is pressed x: {}, y: {}", MouseListener.instance.x, MouseListener.instance.y);
+      }
+
+      if (MouseListener.isButtonPressed(GLFW_MOUSE_BUTTON_1)) {
+        logger.info("mouse button {} is pressed at x: {}, y: {}, dragging: {}",
+            GLFW_MOUSE_BUTTON_1,
+            MouseListener.instance.x, MouseListener.instance.y,
+            MouseListener.instance.dragging);
+      }
+      endFrame();
     }
 
+  }
+
+  private void endFrame() {
+    MouseListener.endFrame();
+  }
+
+  private void cleanup() {
+    // Free the window and associated callbacks
+    glfwFreeCallbacks(windowHandle);
+    glfwDestroyWindow(windowHandle);
+
+    // Terminate GLFW and free the separate error callback
+    glfwTerminate();
+    try {
+      Objects.requireNonNull(glfwSetErrorCallback(null)).free();
+    } catch (Exception e) {
+      logger.error("cannot free error callback");
+    }
   }
 
 }
