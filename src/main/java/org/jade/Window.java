@@ -16,6 +16,7 @@ import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwInit;
@@ -60,6 +61,12 @@ public class Window {
   private int w, h;
   private String title;
 
+  private double prevTime = glfwGetTime();
+  private double accumulator = 0;
+
+  private int currentFrame = 0;
+
+
   private Window() {
     w = 1920;
     h = 1080;
@@ -73,6 +80,7 @@ public class Window {
   public void run() {
 
     logger.info("Hello LWJGL {} !", Version.getVersion());
+    logger.info("current time {} s", prevTime);
 
     init();
     loop();
@@ -173,7 +181,23 @@ public class Window {
     glClearColor(0f, 0f, 1f, .5f);
 
     while (!glfwWindowShouldClose(windowHandle)) {
+      ++currentFrame;
       glfwPollEvents();
+
+      double newTime = glfwGetTime();
+      double elapsed = newTime - prevTime;
+      accumulator += elapsed;
+
+      final double step = 1 / 60d;
+      final double maxAccumulator = 10 * step;
+      accumulator = Math.min(accumulator, maxAccumulator);
+
+      while (accumulator > step) {
+        logger.info("update frame {} with step {} s", currentFrame, step);
+        accumulator -= step;
+      }
+
+      prevTime = newTime;
 
       glClear(GL_COLOR_BUFFER_BIT); // clear the frame buffer
 
