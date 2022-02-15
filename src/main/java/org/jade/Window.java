@@ -185,7 +185,12 @@ public class Window {
       glfwPollEvents();
 
       double newTime = glfwGetTime();
-      double elapsed = newTime - prevTime;
+      double elapsed = newTime - prevTime; // in seconds
+
+      if (elapsed > 0) {
+        double fps = 1 / elapsed;
+        logger.info("fps: {}", fps);
+      }
       accumulator += elapsed;
 
       final double step = 1 / 60d;
