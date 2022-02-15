@@ -1,6 +1,7 @@
 package org.jade;
 
 
+import static org.lwjgl.BufferUtils.createFloatBuffer;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
@@ -40,11 +41,14 @@ import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,6 +210,8 @@ public class Window {
 
       glClear(GL_COLOR_BUFFER_BIT); // clear the frame buffer
 
+      render();
+
       glfwSwapBuffers(windowHandle); // swap the color buffers
 
       if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
@@ -221,6 +227,117 @@ public class Window {
       endFrame();
     }
 
+  }
+
+
+
+  private String vertexShaderSrc = "#version 330 core\n" + // version of opengl
+      "layout (location=0) in vec3 aPos;\n" + // Vertex Array Object Attribute - position of a vertex
+      "layout (location=1) in vec4 aColor;\n" + // Vertex Array Object Attribute - color of a vertex
+      "out vec4 fColor;\n" + // define output
+      "void main()\n" + // called by GPU
+      "{\n" +
+      "    fColor = aColor;\n" + // map same color
+      "    gl_Position = vec4(aPos, 1.0);\n" + // ???
+      "}";
+
+  /*
+   * VAO = Vertex Array Object
+   * struct to store data about 3D model
+   *  contain slots called attribute list
+   *     each attribute list contain one type of data
+   *         one attribute for vertex position
+   *         one attribute for color of the vertex
+   *         texture
+   *         normal vector of the vertex
+   *         ...
+   *
+   *
+   * VBO = Vertex Buffer Object
+   * struct that is stored in the attribute list = contain the actual data
+   *
+   *
+   * EBO = Element Buffer Object
+   * define what vertices are to be grouped to form a triangle,
+   * allows to reuse same vertex for different triangle instead of duplicating
+   *
+   *
+   * */
+  private void render() {
+    // use GL 3.0
+
+    // need one VAO
+    final int vaoID = GL30.glGenVertexArrays();
+
+    GL30.glBindVertexArray(vaoID);
+
+    // store vertex positions into buffer
+    final float[] positions = {
+        // bottom left triangle
+        -0.5f, 0.5f, 0f,
+        -0.5f, -0.5f, 0f,
+        0.5f, -0.5f, 0f,
+        // top right triangle
+        0.5f, -0.5f, 0f,
+        0.5f, 0.5f, 0f,
+        -0.5f, 0.5f, 0f
+    };
+    final FloatBuffer floatBuffer =  BufferUtils.createFloatBuffer(positions.length);
+
+    floatBuffer.put(positions);
+    floatBuffer.flip(); // change from write-mode to read-mode
+
+    // need one VBO to store in one of the attribute list of the VAO
+    final int vboID = GL30.glGenBuffers();
+
+    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vboID);
+
+    // put data into the VBO
+    GL30.glBufferData(GL30.GL_ARRAY_BUFFER, floatBuffer, GL30.GL_STATIC_DRAW);
+
+    // attribute list index to bind the VBO to
+    // must be 0 because attribute 0 must be enabled
+    // TODO see why
+    final int attributeListIndex = 0;
+
+    // define properties of one of the attribute list of the VAO
+    // and bind the currently bound VBO
+    /*
+    * Each attribute which is stated in the Vertex Array Objects state vector
+    * may refer to a different Vertex Buffer Object.
+    * This reference is stored when glVertexAttribPointer is called.
+    * Then the buffer which is currently bound to the target ARRAY_BUFFER
+    * is associated to the attribute and the name (value) of the object is stored
+    * in the state vector of the VAO.
+    * The ARRAY_BUFFER binding is a global state.
+    * */
+    GL30.glVertexAttribPointer(
+        attributeListIndex, // which attribute list
+        3, // number of values per vertex
+        GL30.GL_FLOAT, // type of value
+        false,
+        0, // offset between to vertices. > 0 if contain intermediary values, why do that ?
+        0); // where to begin
+
+    // unbind VBO
+    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+
+    // unbind VAO
+    GL30.glBindVertexArray(0);
+
+
+    // actual draw
+    GL30.glBindVertexArray(vaoID);
+    GL30.glEnableVertexAttribArray(attributeListIndex);
+    GL30.glDrawArrays(GL30.GL_TRIANGLES,
+        0,
+        positions.length / 3); // how many triangles
+    GL30.glDisableVertexAttribArray(0);
+    GL30.glBindVertexArray(0);
+
+    // clean up
+    GL30.glDeleteBuffers(vboID);
+    GL30.glDeleteVertexArrays(vaoID);
   }
 
   private void endFrame() {
