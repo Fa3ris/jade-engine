@@ -1,7 +1,6 @@
 package org.jade;
 
 
-import static org.lwjgl.BufferUtils.createFloatBuffer;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
@@ -273,14 +272,10 @@ public class Window {
 
     // store vertex positions into buffer
     final float[] positions = {
-        // bottom left triangle
-        -0.5f, 0.5f, 0f,
-        -0.5f, -0.5f, 0f,
-        0.5f, -0.5f, 0f,
-        // top right triangle
-        0.5f, -0.5f, 0f,
-        0.5f, 0.5f, 0f,
-        -0.5f, 0.5f, 0f
+        -0.5f, 0.5f, 0f,//v0
+        -0.5f, -0.5f, 0f,//v1
+        0.5f, -0.5f, 0f,//v2
+        0.5f, 0.5f, 0f,//v3
     };
     final FloatBuffer floatBuffer =  BufferUtils.createFloatBuffer(positions.length);
 
@@ -322,21 +317,42 @@ public class Window {
     // unbind VBO
     GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
 
+    int[] indices= { // sens trigonométrique
+        0,1,3, //top left triangle (v0, v1, v3)
+        3,1,2 //bottom right triangle (v3, v1, v2)
+    };
+
+    IntBuffer intBuffer = BufferUtils.createIntBuffer(indices.length);
+    intBuffer.put(indices);
+    intBuffer.flip();
+
+    // index buffer object
+    // warning DO NOT unbind IBO !!!
+    int iboID = GL30.glGenBuffers();
+
+    // bind index buffer to the currently bound VAO
+    GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, iboID);
+
+    GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, intBuffer, GL30.GL_STATIC_DRAW);
+
     // unbind VAO
     GL30.glBindVertexArray(0);
-
 
     // actual draw
     GL30.glBindVertexArray(vaoID);
     GL30.glEnableVertexAttribArray(attributeListIndex);
-    GL30.glDrawArrays(GL30.GL_TRIANGLES,
-        0,
-        positions.length / 3); // how many triangles
+
+    GL30.glDrawElements(
+        GL30.GL_TRIANGLES,
+        indices.length, // number of vertices
+        GL30.GL_UNSIGNED_INT, // type of index values
+        0); // where to start if index buffer object is bound
     GL30.glDisableVertexAttribArray(0);
     GL30.glBindVertexArray(0);
 
     // clean up
     GL30.glDeleteBuffers(vboID);
+    GL30.glDeleteBuffers(iboID);
     GL30.glDeleteVertexArrays(vaoID);
   }
 
