@@ -24,6 +24,7 @@ import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
@@ -177,6 +178,18 @@ public class Window {
     // creates the GLCapabilities instance and makes the OpenGL
     // bindings available for use.
     GL.createCapabilities();
+
+    // control how to map normalized device coordinates to window coordinates
+    // when window gets resized, can change the viewport according to the new dimensions
+    GL30.glViewport(0, 0, w, h);
+
+    glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
+      logger.info("window resized to w: {}, h: {}", width, height);
+      w = width;
+      h = height;
+      GL30.glViewport(0, 0, w, h);
+    });
+
   }
 
   private void loop() {
