@@ -1,11 +1,29 @@
 package org.jade.render;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30.GL_FILL;
+import static org.lwjgl.opengl.GL30.GL_FLOAT;
+import static org.lwjgl.opengl.GL30.GL_FRONT_AND_BACK;
+import static org.lwjgl.opengl.GL30.GL_LINE;
+import static org.lwjgl.opengl.GL30.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL30.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL30.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL30.glBindBuffer;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glBufferData;
+import static org.lwjgl.opengl.GL30.glDeleteBuffers;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30.glDrawElements;
+import static org.lwjgl.opengl.GL30.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30.glGenBuffers;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.glPolygonMode;
+import static org.lwjgl.opengl.GL30.glVertexAttribPointer;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.jade.render.shader.Shader;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
