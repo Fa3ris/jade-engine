@@ -188,6 +188,11 @@ public class Window {
       w = width;
       h = height;
       GL30.glViewport(0, 0, w, h);
+
+      // re-render during resizing
+      glClear(GL_COLOR_BUFFER_BIT); // clear the frame buffer
+      render();
+      glfwSwapBuffers(windowHandle); // swap the color buffers
     });
 
   }
@@ -241,18 +246,6 @@ public class Window {
 
   }
 
-
-
-  private String vertexShaderSrc = "#version 330 core\n" + // version of opengl
-      "layout (location=0) in vec3 aPos;\n" + // Vertex Array Object Attribute - position of a vertex
-      "layout (location=1) in vec4 aColor;\n" + // Vertex Array Object Attribute - color of a vertex
-      "out vec4 fColor;\n" + // define output
-      "void main()\n" + // called by GPU
-      "{\n" +
-      "    fColor = aColor;\n" + // map same color
-      "    gl_Position = vec4(aPos, 1.0);\n" + // ???
-      "}";
-
   /*
    * VAO = Vertex Array Object
    * struct to store data about 3D model
@@ -290,7 +283,7 @@ public class Window {
         0.5f, -0.5f, 0f,//v2
         0.5f, 0.5f, 0f,//v3
     };
-    final FloatBuffer floatBuffer =  BufferUtils.createFloatBuffer(positions.length);
+    final FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(positions.length);
 
     floatBuffer.put(positions);
     floatBuffer.flip(); // change from write-mode to read-mode
@@ -301,6 +294,7 @@ public class Window {
     GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vboID);
 
     // put data into the VBO
+    // more exactly put data into the currently bound GL_ARRAY_BUFFER object
     GL30.glBufferData(GL30.GL_ARRAY_BUFFER, floatBuffer, GL30.GL_STATIC_DRAW);
 
     // attribute list index to bind the VBO to
@@ -311,14 +305,14 @@ public class Window {
     // define properties of one of the attribute list of the VAO
     // and bind the currently bound VBO
     /*
-    * Each attribute which is stated in the Vertex Array Objects state vector
-    * may refer to a different Vertex Buffer Object.
-    * This reference is stored when glVertexAttribPointer is called.
-    * Then the buffer which is currently bound to the target ARRAY_BUFFER
-    * is associated to the attribute and the name (value) of the object is stored
-    * in the state vector of the VAO.
-    * The ARRAY_BUFFER binding is a global state.
-    * */
+     * Each attribute which is stated in the Vertex Array Objects state vector
+     * may refer to a different Vertex Buffer Object.
+     * This reference is stored when glVertexAttribPointer is called.
+     * Then the buffer which is currently bound to the target ARRAY_BUFFER
+     * is associated to the attribute and the name (value) of the object is stored
+     * in the state vector of the VAO.
+     * The ARRAY_BUFFER binding is a global state.
+     * */
     GL30.glVertexAttribPointer(
         attributeListIndex, // which attribute list
         3, // number of values per vertex
@@ -330,9 +324,9 @@ public class Window {
     // unbind VBO
     GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
 
-    int[] indices= { // sens trigonométrique
-        0,1,3, //top left triangle (v0, v1, v3)
-        3,1,2 //bottom right triangle (v3, v1, v2)
+    int[] indices = { // sens trigonométrique
+        0, 1, 3, //top left triangle (v0, v1, v3)
+        3, 1, 2 //bottom right triangle (v3, v1, v2)
     };
 
     IntBuffer intBuffer = BufferUtils.createIntBuffer(indices.length);
@@ -423,6 +417,81 @@ public class Window {
     GL30.glDeleteBuffers(vboID);
     GL30.glDeleteBuffers(iboID);
     GL30.glDeleteVertexArrays(vaoID);
+
+
+// ##############################################
+
+    final String triVertSrc = readFile("shaders/triangle/vertexShader.glsl");
+    final int triVertId = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
+
+    GL30.glShaderSource(triVertId, triVertSrc);
+    GL30.glCompileShader(triVertId);
+
+    if (GL30.glGetShaderi(triVertId, GL30.GL_COMPILE_STATUS) == GL30.GL_FALSE) {
+      logger.error("cannot compile triangle vertex shader {}", GL30.glGetShaderInfoLog(triVertId));
+      throw new RuntimeException("vertex shader compilation error");
+    }
+
+    final String triFragSrc = readFile("shaders/triangle/fragmentShader.glsl");
+    final int triFragId = GL30.glCreateShader(GL30.GL_FRAGMENT_SHADER);
+
+    GL30.glShaderSource(triFragId, triFragSrc);
+    GL30.glCompileShader(triFragId);
+
+    if (GL30.glGetShaderi(triFragId, GL30.GL_COMPILE_STATUS) == GL30.GL_FALSE) {
+      logger.error("cannot compile triangle fragment shader {}", GL30.glGetShaderInfoLog(triFragId));
+      throw new RuntimeException("fragment shader compilation error");
+    }
+
+    final int triProgId = GL30.glCreateProgram();
+
+    GL30.glAttachShader(triProgId, triVertId);
+    GL30.glAttachShader(triProgId, triFragId);
+    GL30.glLinkProgram(triProgId);
+    GL30.glValidateProgram(triProgId);
+
+    if (GL30.glGetProgrami(triProgId, GL30.GL_LINK_STATUS) == GL30.GL_FALSE) {
+      logger.error("cannot link shader program {}", GL30.glGetProgramInfoLog(triProgId));
+      throw new RuntimeException("shader program linking error");
+    }
+
+    // can delete shaders once they have been linked
+    GL30.glDeleteShader(triVertId);
+    GL30.glDeleteShader(triFragId);
+
+    // each vertex position uses 3 floats
+    // tightly packed there is not space between consecutive vertex data
+    final float[] vertices = {
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f,  0.5f, 0.0f
+    };
+
+    final int triangleVAOID = GL30.glGenVertexArrays();
+
+    GL30.glBindVertexArray(triangleVAOID);
+
+    final int triangleVBOID = GL30.glGenBuffers();
+
+    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, triangleVBOID);
+    GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vertices, GL30.GL_STATIC_DRAW);
+
+    GL30.glVertexAttribPointer(0,
+        3,
+        GL30.GL_FLOAT,
+        false,
+        3 * Float.BYTES, // could use 0 if array is tightly packed, GL will compute automatically
+        0);
+    GL30.glEnableVertexAttribArray(0);
+
+    GL30.glUseProgram(triProgId);
+
+    // draw commands
+    GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, 3);
+
+    // need to wait to attach to VAO before unbinding
+    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+
   }
 
   private String readFile(String path) {
