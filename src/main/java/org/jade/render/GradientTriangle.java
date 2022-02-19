@@ -1,5 +1,7 @@
 package org.jade.render;
 
+import static org.lwjgl.opengl.GL30.*;
+
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.jade.render.shader.Shader;
@@ -26,9 +28,9 @@ public class GradientTriangle {
     /* ########################### */
 
     // need one VAO
-    vaoID = GL30.glGenVertexArrays();
+    vaoID = glGenVertexArrays();
 
-    GL30.glBindVertexArray(vaoID);
+    glBindVertexArray(vaoID);
 
     // TODO understand Buffer NIO API
     FloatBuffer positionsBuffer = MemoryUtil.memAllocFloat(3 * 4); // need 12 floats
@@ -40,14 +42,14 @@ public class GradientTriangle {
     positionsBuffer.flip();  // ~ change from write-mode to read-mode
 
     // need one VBO to store in one of the attribute list of the VAO
-    vboID = GL30.glGenBuffers();
+    vboID = glGenBuffers();
 
     // set global GL_ARRAY_BUFFER to be vboID
-    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vboID);
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
     // put data into the VBO
     // more exactly put data into the currently bound GL_ARRAY_BUFFER object
-    GL30.glBufferData(GL30.GL_ARRAY_BUFFER, positionsBuffer, GL30.GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
 
     // can free memory because
     // When using OpenGL's glBufferData() we now can free the buffer, because OpenGL read everything from it.
@@ -69,19 +71,19 @@ public class GradientTriangle {
      * in the state vector of the VAO.
      * The ARRAY_BUFFER binding is a global state.
      * */
-    GL30.glVertexAttribPointer(
+    glVertexAttribPointer(
         attributeListIndex, // which attribute list
         3, // number of values per vertex
-        GL30.GL_FLOAT, // type of value
+        GL_FLOAT, // type of value
         false,
         0, // offset between to vertices. > 0 if contain intermediary values, why do that ?
         0); // where to begin
 
     // enable the ith attribute of the currently bound Vertex Array Object
-    GL30.glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(0);
 
     // unbind VBO - not really necessary
-    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     indicesCount = 3*2;
     IntBuffer indicesBuffer = MemoryUtil.memAllocInt(indicesCount);
@@ -93,20 +95,20 @@ public class GradientTriangle {
 
     // element/index buffer object
     // warning DO NOT unbind EBO while VAO is still bound else VAO loses EBO !!!
-    eboID = GL30.glGenBuffers();
+    eboID = glGenBuffers();
 
     // bind index buffer to the currently bound VAO
-    GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, eboID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
 
-    GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL30.GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
 
     MemoryUtil.memFree(indicesBuffer);
 
     // unbind VAO
-    GL30.glBindVertexArray(0);
+    glBindVertexArray(0);
 
     // can unbind EBO after unbinding VAO
-    GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     /* ########################### */
     /* END vertex attributes loading */
@@ -119,29 +121,29 @@ public class GradientTriangle {
   public void render() {
     final boolean useWireFrame = true;
     if (useWireFrame) { // WIREFRAME MODE
-      GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
 
     shader.use();
 
-    GL30.glBindVertexArray(vaoID);
+    glBindVertexArray(vaoID);
 
-    GL30.glDrawElements(
-        GL30.GL_TRIANGLES,
+    glDrawElements(
+        GL_TRIANGLES,
         indicesCount, // number of vertices
-        GL30.GL_UNSIGNED_INT, // type of index values
+        GL_UNSIGNED_INT, // type of index values
         0); // where to start if index buffer object is bound
 
     if (useWireFrame) { // FILL MODE
-      GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
   }
 
   public void clean() {
     shader.delete();
-    GL30.glDeleteBuffers(vboID);
-    GL30.glDeleteBuffers(eboID);
-    GL30.glDeleteVertexArrays(vaoID);
+    glDeleteBuffers(vboID);
+    glDeleteBuffers(eboID);
+    glDeleteVertexArrays(vaoID);
   }
 
 }
