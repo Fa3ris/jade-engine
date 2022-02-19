@@ -1,11 +1,13 @@
 package org.jade.render;
 
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.system.MemoryStack.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.jade.render.shader.Shader;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 public class SingleTriangle {
@@ -26,17 +28,15 @@ public class SingleTriangle {
     vboID = glGenBuffers();
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
-    // TODO understand Buffer NIO API
-    FloatBuffer positionsBuffer = MemoryUtil.memAllocFloat(3 * 3);
-    positionsBuffer.put(-0.5f).put(-0.5f).put(0f); // bottom-left
-    positionsBuffer.put(0.5f).put(-0.5f).put(0f); // bottom-right
-    positionsBuffer.put(0f).put(0.5f).put(0f); // top
-
-    positionsBuffer.flip();
-
-    glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
-
-    MemoryUtil.memFree(positionsBuffer);
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      // TODO understand Buffer NIO API
+      FloatBuffer positionsBuffer = stackMallocFloat(3 * 3);
+      positionsBuffer.put(-0.5f).put(-0.5f).put(0f); // bottom-left
+      positionsBuffer.put(0.5f).put(-0.5f).put(0f); // bottom-right
+      positionsBuffer.put(0f).put(0.5f).put(0f); // top
+      positionsBuffer.flip();
+      glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
+    }
 
     // describe vertex attribute
     glVertexAttribPointer(
@@ -53,14 +53,14 @@ public class SingleTriangle {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
 
     indicesCount = 3;
-    IntBuffer indicesBuffer = MemoryUtil.memAllocInt(indicesCount);
-    // sens trigonométrique
-    indicesBuffer.put(0).put(1).put(2);
-    indicesBuffer.flip();
 
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-
-    MemoryUtil.memFree(indicesBuffer);
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      IntBuffer indicesBuffer = stackMallocInt(indicesCount);
+      // sens trigonométrique
+      indicesBuffer.put(0).put(1).put(2);
+      indicesBuffer.flip();
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
+    }
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
