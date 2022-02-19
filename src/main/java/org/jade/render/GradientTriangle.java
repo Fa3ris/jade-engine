@@ -2,7 +2,7 @@ package org.jade.render;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Objects;
+import org.jade.render.shader.Shader;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -12,10 +12,11 @@ public class GradientTriangle {
 
   private static final Logger logger = LoggerFactory.getLogger(GradientTriangle.class);
 
-  private final int programID;
   private final int vaoID;
   private final int vboID;
   private final int eboID;
+
+  private final Shader shader;
 
   private final int indicesCount;
 
@@ -111,54 +112,8 @@ public class GradientTriangle {
     /* END vertex attributes loading */
     /* ########################### */
 
-    /* ########################### */
-    /* Shader loading */
-    /* ########################### */
-    final String vertexSource = readFile("shaders/vertexShader.glsl");
-    logger.debug("vertex source is {}", vertexSource);
-
-    final int vertexID = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
-    GL30.glShaderSource(vertexID, vertexSource);
-    GL30.glCompileShader(vertexID);
-
-    if (GL30.glGetShaderi(vertexID, GL30.GL_COMPILE_STATUS) == GL30.GL_FALSE) {
-      logger.error("cannot compile vertex shader {}", GL30.glGetShaderInfoLog(vertexID));
-      throw new RuntimeException("vertex shader compilation error");
-    }
-
-    final String fragmentSource = readFile("shaders/fragmentShader.glsl");
-    logger.debug("fragment source is {}", fragmentSource);
-
-    final int fragmentID = GL30.glCreateShader(GL30.GL_FRAGMENT_SHADER);
-    GL30.glShaderSource(fragmentID, fragmentSource);
-    GL30.glCompileShader(fragmentID);
-
-    if (GL30.glGetShaderi(fragmentID, GL30.GL_COMPILE_STATUS) == GL30.GL_FALSE) {
-      logger.error("cannot compile fragment shader {}", GL30.glGetShaderInfoLog(fragmentID));
-      throw new RuntimeException("fragment shader compilation error");
-    }
-
-    programID = GL30.glCreateProgram();
-
-    GL30.glAttachShader(programID, vertexID);
-    GL30.glAttachShader(programID, fragmentID);
-
-    GL30.glLinkProgram(programID);
-    GL30.glValidateProgram(programID);
-
-    // can delete once program is linked
-    GL30.glDeleteShader(vertexID);
-    GL30.glDeleteShader(fragmentID);
-
-    GL30.glBindAttribLocation(
-        programID,
-        attributeListIndex,
-        "position" // which variable in vertex shader to bind
-    );
-
-    /* ########################### */
-    /* END Shader loading */
-    /* ########################### */
+    shader = new Shader("shaders/vertexShader.glsl", "shaders/fragmentShader.glsl");
+    shader.bindAttribute(attributeListIndex, "position");
   }
 
   public void render() {
@@ -166,7 +121,8 @@ public class GradientTriangle {
     if (useWireFrame) { // WIREFRAME MODE
       GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
     }
-    GL30.glUseProgram(programID);
+
+    shader.use();
 
     GL30.glBindVertexArray(vaoID);
 
@@ -182,21 +138,10 @@ public class GradientTriangle {
   }
 
   public void clean() {
-    GL30.glDeleteProgram(programID);
+    shader.delete();
     GL30.glDeleteBuffers(vboID);
     GL30.glDeleteBuffers(eboID);
     GL30.glDeleteVertexArrays(vaoID);
-  }
-
-
-  private String readFile(String path) {
-    try {
-      return new String(Objects.requireNonNull(
-          getClass().getClassLoader().getResourceAsStream(path)).readAllBytes());
-    } catch (Exception e) {
-      logger.error("cannot load file at path {}", path, e);
-      throw new RuntimeException();
-    }
   }
 
 }
