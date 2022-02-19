@@ -11,6 +11,11 @@ public class Shader {
 
   final int programID;
 
+  /**
+   *
+   * @param vertexPath absolute path starting from classpath root WITHOUT leading slash '/'
+   * @param fragmentPath absolute path starting from classpath root WITHOUT leading slash '/'
+   */
   public Shader(String vertexPath, String fragmentPath) {
 
     final int vertexID = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);

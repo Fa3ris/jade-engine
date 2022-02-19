@@ -41,11 +41,10 @@ import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.GradientTriangle;
-import org.lwjgl.BufferUtils;
+import org.jade.render.SingleTriangle;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -95,7 +94,8 @@ public class Window {
   }
 
   private GradientTriangle gradientTriangle;
-
+  private SingleTriangle singleTriangle;
+  
   private void init() {
 
     // Setup an error callback.
@@ -198,7 +198,7 @@ public class Window {
     });
 
     gradientTriangle = new GradientTriangle();
-
+    singleTriangle = new SingleTriangle();
   }
 
   private void loop() {
@@ -248,9 +248,6 @@ public class Window {
       endFrame();
     }
 
-    logger.info("clean window");
-    gradientTriangle.clean();
-
   }
 
   /*
@@ -279,90 +276,8 @@ public class Window {
     // use GL 3.0
 
     gradientTriangle.render();
-    
-// ##############################################
+    singleTriangle.render();
 
-    final String triVertSrc = readFile("shaders/triangle/vertexShader.glsl");
-    final int triVertId = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
-
-    GL30.glShaderSource(triVertId, triVertSrc);
-    GL30.glCompileShader(triVertId);
-
-    if (GL30.glGetShaderi(triVertId, GL30.GL_COMPILE_STATUS) == GL30.GL_FALSE) {
-      logger.error("cannot compile triangle vertex shader {}", GL30.glGetShaderInfoLog(triVertId));
-      throw new RuntimeException("vertex shader compilation error");
-    }
-
-    final String triFragSrc = readFile("shaders/triangle/fragmentShader.glsl");
-    final int triFragId = GL30.glCreateShader(GL30.GL_FRAGMENT_SHADER);
-
-    GL30.glShaderSource(triFragId, triFragSrc);
-    GL30.glCompileShader(triFragId);
-
-    if (GL30.glGetShaderi(triFragId, GL30.GL_COMPILE_STATUS) == GL30.GL_FALSE) {
-      logger.error("cannot compile triangle fragment shader {}", GL30.glGetShaderInfoLog(triFragId));
-      throw new RuntimeException("fragment shader compilation error");
-    }
-
-    final int triProgId = GL30.glCreateProgram();
-
-    GL30.glAttachShader(triProgId, triVertId);
-    GL30.glAttachShader(triProgId, triFragId);
-    GL30.glLinkProgram(triProgId);
-    GL30.glValidateProgram(triProgId);
-
-    if (GL30.glGetProgrami(triProgId, GL30.GL_LINK_STATUS) == GL30.GL_FALSE) {
-      logger.error("cannot link shader program {}", GL30.glGetProgramInfoLog(triProgId));
-      throw new RuntimeException("shader program linking error");
-    }
-
-    // can delete shaders once they have been linked
-    GL30.glDeleteShader(triVertId);
-    GL30.glDeleteShader(triFragId);
-
-    // each vertex position uses 3 floats
-    // tightly packed there is not space between consecutive vertex data
-    final float[] vertices = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f
-    };
-
-    final int triangleVAOID = GL30.glGenVertexArrays();
-
-    GL30.glBindVertexArray(triangleVAOID);
-
-    final int triangleVBOID = GL30.glGenBuffers();
-
-    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, triangleVBOID);
-    GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vertices, GL30.GL_STATIC_DRAW);
-
-    GL30.glVertexAttribPointer(0,
-        3,
-        GL30.GL_FLOAT,
-        false,
-        3 * Float.BYTES, // could use 0 if array is tightly packed, GL will compute automatically
-        0);
-    GL30.glEnableVertexAttribArray(0);
-
-    GL30.glUseProgram(triProgId);
-
-    // draw commands
-    GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, 3);
-
-    // need to wait to attach to VAO before unbinding
-    GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-
-  }
-
-  private String readFile(String path) {
-    try {
-      return new String(Objects.requireNonNull(
-          getClass().getClassLoader().getResourceAsStream(path)).readAllBytes());
-    } catch (Exception e) {
-      logger.error("cannot load file at path {}", path, e);
-      throw new RuntimeException();
-    }
   }
 
   private void endFrame() {
@@ -370,6 +285,11 @@ public class Window {
   }
 
   private void cleanup() {
+    logger.debug("clean window");
+
+    gradientTriangle.clean();
+    singleTriangle.clean();
+
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
     glfwDestroyWindow(windowHandle);
