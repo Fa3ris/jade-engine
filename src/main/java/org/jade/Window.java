@@ -45,6 +45,7 @@ import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.GradientTriangle;
 import org.jade.render.SingleTriangle;
+import org.jade.render.Triangles;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -95,7 +96,7 @@ public class Window {
 
   private GradientTriangle gradientTriangle;
   private SingleTriangle singleTriangle;
-  
+
   private void init() {
 
     // Setup an error callback.
@@ -199,7 +200,23 @@ public class Window {
 
     gradientTriangle = new GradientTriangle();
     singleTriangle = new SingleTriangle();
+
+    float[] vertices = {
+        -.5f, .5f, 0f,
+        .25f, .4f, 0f,
+        .66f, -.42f, 0f,
+        .88f, .12f, 0f
+    };
+
+    int[] indices = {
+        1, 3, 2,
+        0, 3, 2
+    };
+
+    triangles = new Triangles(vertices, indices);
   }
+
+  private Triangles triangles;
 
   private void loop() {
     // Set the clear color
@@ -278,6 +295,8 @@ public class Window {
     gradientTriangle.render();
     singleTriangle.render();
 
+    triangles.render();
+
   }
 
   private void endFrame() {
@@ -289,6 +308,7 @@ public class Window {
 
     gradientTriangle.clean();
     singleTriangle.clean();
+    triangles.clean();
 
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
