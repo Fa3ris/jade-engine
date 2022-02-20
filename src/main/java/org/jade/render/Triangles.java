@@ -41,45 +41,7 @@ public class Triangles {
 
   public Triangles(float[] vertices, int[] indices) {
 
-    indicesCount = indices.length;
-
-    vaoID = glGenVertexArrays();
-    glBindVertexArray(vaoID);
-
-    vboID = glGenBuffers();
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      FloatBuffer positionsBuffer = stackMallocFloat(vertices.length);
-      positionsBuffer.put(vertices).flip();
-      glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
-    }
-
-    // describe vertex attribute
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        false,
-        3 * Float.BYTES, // could use 0 if array is tightly packed, GL will compute automatically
-        0);
-
-    glEnableVertexAttribArray(0);
-
-    eboID = glGenBuffers();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      IntBuffer indicesBuffer = stackMallocInt(indicesCount);
-      indicesBuffer.put(indices).flip();
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-    }
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    shader = new Shader("shaders/triangle/vertexShader.glsl", "shaders/triangle/fragmentShader.glsl");
+    this(vertices, indices, "shaders/triangle/vertexShader.glsl", "shaders/triangle/fragmentShader.glsl");
 
   }
 
