@@ -215,9 +215,24 @@ public class Window {
     };
 
     twoTriangles = new Triangles(vertices, indices);
+
+    int[] tri1Ind  = {
+        0, 1, 2,
+    };
+
+    triangle1 = new Triangles(vertices, tri1Ind);
+
+    int[] tri2Ind  = {
+        1, 3, 4
+    };
+
+    triangle2 = new Triangles(vertices, tri2Ind);
+
   }
 
   private Triangles twoTriangles;
+  private Triangles triangle1;
+  private Triangles triangle2;
 
   private void loop() {
     // Set the clear color
@@ -296,7 +311,13 @@ public class Window {
     gradientTriangle.render();
     singleTriangle.render();
 
-    twoTriangles.render();
+    if (true) {
+      twoTriangles.render();
+
+    } else {
+      triangle1.render();
+      triangle2.render();
+    }
 
   }
 
