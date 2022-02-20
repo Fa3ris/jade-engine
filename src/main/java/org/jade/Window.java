@@ -228,11 +228,15 @@ public class Window {
 
     triangle2 = new Triangles(vertices, tri2Ind);
 
+    yellowTriangle = new Triangles(vertices, tri2Ind,
+        "shaders/triangle/vertexShader.glsl",
+        "shaders/triangle/fragmentShader-yellow.glsl");
   }
 
   private Triangles twoTriangles;
   private Triangles triangle1;
   private Triangles triangle2;
+  private Triangles yellowTriangle;
 
   private void loop() {
     // Set the clear color
@@ -311,12 +315,17 @@ public class Window {
     gradientTriangle.render();
     singleTriangle.render();
 
-    if (true) {
+    boolean useTwoTriangles = false;
+    if (useTwoTriangles) {
       twoTriangles.render();
-
     } else {
       triangle1.render();
-      triangle2.render();
+      boolean useYellow = true;
+      if (useYellow) {
+        yellowTriangle.render();
+      } else {
+        triangle2.render();
+      }
     }
 
   }
