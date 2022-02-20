@@ -202,21 +202,22 @@ public class Window {
     singleTriangle = new SingleTriangle();
 
     float[] vertices = {
-        -.5f, .5f, 0f,
-        .25f, .4f, 0f,
-        .66f, -.42f, 0f,
-        .88f, .12f, 0f
+        -.5f, -.5f, 0f, // left
+        0f, -.5f, 0f, // middle
+        -.25f, .5f, 0f, // top-left
+        .5f, -.5f, 0f, // right
+        .25f, .5f, 0f, // top-right
     };
 
     int[] indices = {
-        1, 3, 2,
-        0, 3, 2
+        0, 1, 2,
+        1, 3, 4
     };
 
-    triangles = new Triangles(vertices, indices);
+    twoTriangles = new Triangles(vertices, indices);
   }
 
-  private Triangles triangles;
+  private Triangles twoTriangles;
 
   private void loop() {
     // Set the clear color
@@ -295,7 +296,7 @@ public class Window {
     gradientTriangle.render();
     singleTriangle.render();
 
-    triangles.render();
+    twoTriangles.render();
 
   }
 
@@ -308,7 +309,7 @@ public class Window {
 
     gradientTriangle.clean();
     singleTriangle.clean();
-    triangles.clean();
+    twoTriangles.clean();
 
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
