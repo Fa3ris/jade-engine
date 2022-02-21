@@ -1,5 +1,6 @@
 package org.jade.render.shader;
 
+import java.nio.FloatBuffer;
 import java.util.Objects;
 import org.lwjgl.opengl.GL30;
 import org.slf4j.Logger;
@@ -68,6 +69,15 @@ public class Shader {
 
   public void delete() {
     GL30.glDeleteProgram(programID);
+  }
+
+  /**
+   * need to pass off-heap memory buffer
+   */
+  public void setUniform4v(String name, FloatBuffer buffer) {
+    use();
+    int uniformLocation = GL30.glGetUniformLocation(programID, name);
+    GL30.glUniform4fv(uniformLocation, buffer);
   }
 
   private String readFile(String path) {

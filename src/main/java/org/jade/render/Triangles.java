@@ -31,7 +31,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class Triangles {
 
-  private final Shader shader;
+  protected final Shader shader;
 
   private final int vaoID;
   private final int vboID;

@@ -46,6 +46,7 @@ import java.util.Objects;
 import org.jade.render.GradientTriangle;
 import org.jade.render.SingleTriangle;
 import org.jade.render.Triangles;
+import org.jade.render.UpdatingTriangles;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -235,6 +236,10 @@ public class Window {
     linkedTriangle = new Triangles(vertices, tri2Ind,
         "shaders/link/vertexShader.glsl",
         "shaders/link/fragmentShader.glsl");
+
+    updatingTriangles = new UpdatingTriangles(vertices, tri1Ind,
+        "shaders/uniform/vertexShader.glsl",
+        "shaders/uniform/fragmentShader.glsl");
   }
 
   private Triangles twoTriangles;
@@ -243,6 +248,7 @@ public class Window {
   private Triangles yellowTriangle;
 
   private Triangles linkedTriangle;
+  private UpdatingTriangles updatingTriangles;
 
   private void loop() {
     // Set the clear color
@@ -267,6 +273,7 @@ public class Window {
 
       while (accumulator > step) {
         logger.debug("update frame {} with step {} s", currentFrame, step);
+        updatingTriangles.update(step);
         accumulator -= step;
       }
 
@@ -322,12 +329,12 @@ public class Window {
     singleTriangle.render();
 
     boolean useTwoTriangles = false;
-    boolean useLinkedTriangle = true;
+    boolean useLinkedTriangle = false;
     if (useTwoTriangles) {
       twoTriangles.render();
     } else if (useLinkedTriangle) {
       linkedTriangle.render();
-    } else {
+    } else if (false) {
       triangle1.render();
       boolean useYellow = true;
       if (useYellow) {
@@ -335,6 +342,8 @@ public class Window {
       } else {
         triangle2.render();
       }
+    } else {
+      updatingTriangles.render();
     }
 
 
