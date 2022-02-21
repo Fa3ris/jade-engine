@@ -4,7 +4,6 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 import java.nio.FloatBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.slf4j.LoggerFactory;
 
 public class UpdatingTriangles extends Triangles {
 

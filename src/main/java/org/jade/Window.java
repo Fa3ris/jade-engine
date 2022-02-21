@@ -240,6 +240,20 @@ public class Window {
     updatingTriangles = new UpdatingTriangles(vertices, tri1Ind,
         "shaders/uniform/vertexShader.glsl",
         "shaders/uniform/fragmentShader.glsl");
+
+    float coloredVertices[] = {
+        // positions         // colors
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
+    };
+
+    coloredTriangle = new Triangles(coloredVertices, tri1Ind,
+        "shaders/color/vertexShader.glsl",
+        "shaders/color/fragmentShader.glsl");
+
+    coloredTriangle.configVertexAttribute(0, 3, 6*Float.BYTES, 0);
+    coloredTriangle.configVertexAttribute(1, 3, 6*Float.BYTES, 3*Float.BYTES);
   }
 
   private Triangles twoTriangles;
@@ -249,6 +263,7 @@ public class Window {
 
   private Triangles linkedTriangle;
   private UpdatingTriangles updatingTriangles;
+  private Triangles coloredTriangle;
 
   private void loop() {
     // Set the clear color
@@ -325,9 +340,10 @@ public class Window {
   private void render() {
     // use GL 3.0
 
-    gradientTriangle.render();
-    singleTriangle.render();
-
+    if (false) {
+      gradientTriangle.render();
+      singleTriangle.render();
+    }
     boolean useTwoTriangles = false;
     boolean useLinkedTriangle = false;
     if (useTwoTriangles) {
@@ -342,12 +358,11 @@ public class Window {
       } else {
         triangle2.render();
       }
-    } else {
+    } else if (false){
       updatingTriangles.render();
+    } else {
+      coloredTriangle.render();
     }
-
-
-
   }
 
   private void endFrame() {

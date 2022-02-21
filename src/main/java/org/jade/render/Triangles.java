@@ -88,6 +88,19 @@ public class Triangles {
 
   }
 
+  public void configVertexAttribute(int index, int size, int stride, long offset) {
+    glBindVertexArray(vaoID);
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glVertexAttribPointer(
+        index,
+        size,
+        GL_FLOAT,
+        false,
+        stride,
+        offset);
+    glEnableVertexAttribArray(index);
+  }
+
 
   public void render() {
 
