@@ -256,7 +256,7 @@ public class Window {
     coloredTriangle.configVertexAttribute(0, 3, 6*Float.BYTES, 0);
     coloredTriangle.configVertexAttribute(1, 3, 6*Float.BYTES, 3*Float.BYTES);
 
-    TexturedQuad texturedQuad = new TexturedQuad();
+    texturedQuad = new TexturedQuad();
   }
 
   private Triangles twoTriangles;
@@ -267,6 +267,8 @@ public class Window {
   private Triangles linkedTriangle;
   private UpdatingTriangles updatingTriangles;
   private Triangles coloredTriangle;
+
+  private TexturedQuad texturedQuad;
 
   private void loop() {
     // Set the clear color
@@ -363,8 +365,10 @@ public class Window {
       }
     } else if (false){
       updatingTriangles.render();
-    } else {
+    } else if (false) {
       coloredTriangle.render();
+    } else {
+      texturedQuad.render();
     }
   }
 
