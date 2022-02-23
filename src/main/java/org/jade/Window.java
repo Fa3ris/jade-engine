@@ -45,6 +45,7 @@ import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.GradientTriangle;
 import org.jade.render.SingleTriangle;
+import org.jade.render.TexturedQuad;
 import org.jade.render.Triangles;
 import org.jade.render.UpdatingTriangles;
 import org.lwjgl.Version;
@@ -254,6 +255,8 @@ public class Window {
 
     coloredTriangle.configVertexAttribute(0, 3, 6*Float.BYTES, 0);
     coloredTriangle.configVertexAttribute(1, 3, 6*Float.BYTES, 3*Float.BYTES);
+
+    TexturedQuad texturedQuad = new TexturedQuad();
   }
 
   private Triangles twoTriangles;
