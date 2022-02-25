@@ -3,6 +3,7 @@ package org.jade.render.shader;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,12 @@ public class Shader {
     use();
     int uniformLocation = GL30.glGetUniformLocation(programID, name);
     GL30.glUniform4fv(uniformLocation, buffer);
+  }
+
+  public void setUniformMatrix4fv(String name, FloatBuffer mat) {
+    use();
+    int uniformLocation = GL30.glGetUniformLocation(programID, name);
+    GL30.glUniformMatrix4fv(uniformLocation, false, mat);
   }
 
   public void setUniform1i(String name, IntBuffer buffer) {

@@ -41,6 +41,7 @@ import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.GradientTriangle;
@@ -48,6 +49,9 @@ import org.jade.render.SingleTriangle;
 import org.jade.render.TexturedQuad;
 import org.jade.render.Triangles;
 import org.jade.render.UpdatingTriangles;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -257,6 +261,27 @@ public class Window {
     coloredTriangle.configVertexAttribute(1, 3, 6*Float.BYTES, 3*Float.BYTES);
 
     texturedQuad = new TexturedQuad();
+
+    Vector4f vector4f = new Vector4f(1f, 0f, 0f, 1f);
+    // w is the homogeneous coordinate
+    logger.info("vector before transform {}", vector4f);
+
+    Matrix4f matrix4f = new Matrix4f().identity().translate(new Vector3f(1f, 1f, 0f));
+
+    vector4f = matrix4f.transform(vector4f);
+
+    logger.info("vector after transform {}", vector4f);
+
+    texturedQuadMat = new Matrix4f().identity() // transformations are applied in reverse order
+        // the matrix operation on the vector is v' = M*v
+        .rotate((float) Math.toRadians(90.0f), new Vector3f(0f, 0f, 1f)) // rotate around z-axis
+        .scale(new Vector3f(.5f, .5f, .5f));
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      FloatBuffer buffer = texturedQuadMat.get(stack.mallocFloat(16));
+      texturedQuad.setTransform(buffer);
+    }
+
+
   }
 
   private Triangles twoTriangles;
@@ -269,6 +294,8 @@ public class Window {
   private Triangles coloredTriangle;
 
   private TexturedQuad texturedQuad;
+
+  private Matrix4f texturedQuadMat;
 
   private void loop() {
     // Set the clear color
@@ -294,6 +321,15 @@ public class Window {
       while (accumulator > step) {
         logger.debug("update frame {} with step {} s", currentFrame, step);
         updatingTriangles.update(step);
+
+        texturedQuadMat.identity()
+            .translate(new Vector3f(.5f, -.5f, 0f))
+            .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f)); // rotate around z-axis
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+          FloatBuffer buffer = texturedQuadMat.get(stack.mallocFloat(16));
+          texturedQuad.setTransform(buffer);
+        }
+
         accumulator -= step;
       }
 

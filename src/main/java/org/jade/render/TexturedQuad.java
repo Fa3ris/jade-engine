@@ -163,4 +163,9 @@ public class TexturedQuad {
     triangles.render();
   }
 
+
+  public void setTransform(FloatBuffer buffer) {
+    triangles.shader.setUniformMatrix4fv("transform", buffer);
+  }
+
 }
