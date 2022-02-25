@@ -323,8 +323,8 @@ public class Window {
         updatingTriangles.update(step);
 
         texturedQuadMat.identity()
-            .translate(new Vector3f(.5f, -.5f, 0f))
-            .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f)); // rotate around z-axis
+            .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
+            .translate(new Vector3f(.5f, -.5f, 0f).normalize());
         try (MemoryStack stack = MemoryStack.stackPush()) {
           FloatBuffer buffer = texturedQuadMat.get(stack.mallocFloat(16));
           texturedQuad.setTransform(buffer);
