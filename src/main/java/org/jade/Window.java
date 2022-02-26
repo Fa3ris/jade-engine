@@ -328,6 +328,33 @@ public class Window {
         try (MemoryStack stack = MemoryStack.stackPush()) {
           FloatBuffer buffer = texturedQuadMat.get(stack.mallocFloat(16));
           texturedQuad.setTransform(buffer);
+
+          /*
+          * model matrix : local space -> world space
+          * view matrix : world space -> view/camera space
+          * projection matrix : view space -> clip space
+          *
+          * project into the range of -1;1 expected by GL for each axis
+          * e.g. for an axis map range -1000;1000 to -1;1
+          *
+          * frustrum = viewing box = space containing what will be visible
+          * near plane / far plane
+          *
+          * perspective division: divide by the homogeneous coordinate w; has an effect only if w != 1
+          * goes from a 4D vector to 3D vector
+          * => performed automatically at end of vertex shader execution
+          *
+          * 2 types of projection
+          * ortho: w = 1
+          * perspective: w != 1
+             FOV: field of view = angle defining width of near and far planes ~ 45°
+             * aspect ratio = width / height
+          *
+          * after mapping to -1;1 normalized device coordinate
+          * use viewPort dimension (glViewport) to map to physical screen
+          *
+          *  */
+
         }
 
         accumulator -= step;
