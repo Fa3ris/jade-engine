@@ -2,9 +2,6 @@ package org.jade.render;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
-import java.nio.FloatBuffer;
-import org.lwjgl.system.MemoryStack;
-
 public class UpdatingTriangles extends Triangles {
 
   public UpdatingTriangles(float[] vertices, int[] indices, String vertexPath, String fragmentPath) {
@@ -13,12 +10,6 @@ public class UpdatingTriangles extends Triangles {
 
   public void update(double dt) {
     float green = (float) (Math.sin(glfwGetTime()) / 2f) + .5f;
-    try (MemoryStack ignored = MemoryStack.stackPush()) {
-      FloatBuffer buffer = MemoryStack.stackMallocFloat(4);
-      buffer.put(new float[]{0f, green, 0f, 1f});
-      buffer.flip();
-      shader.setUniform4v("ourColor", buffer);
-    }
-
+    shader.setUniform4fv("ourColor", new float[]{0f, green, 0f, 1f});
   }
 }

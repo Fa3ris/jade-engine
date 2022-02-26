@@ -5,6 +5,7 @@ import java.nio.IntBuffer;
 import java.util.Objects;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,22 +77,56 @@ public class Shader {
   /**
    * need to pass off-heap memory buffer
    */
-  public void setUniform4v(String name, FloatBuffer buffer) {
+  @Deprecated
+  public void setUniform4fv(String name, FloatBuffer buffer) {
     use();
     int uniformLocation = GL30.glGetUniformLocation(programID, name);
     GL30.glUniform4fv(uniformLocation, buffer);
   }
 
+  public void setUniform4fv(String name, float[] vec) {
+    use();
+    try (MemoryStack ignored = MemoryStack.stackPush()) {
+      FloatBuffer buffer = MemoryStack.stackMallocFloat(4);
+      buffer.put(vec);
+      buffer.flip();
+      int uniformLocation = GL30.glGetUniformLocation(programID, name);
+      GL30.glUniform4fv(uniformLocation, buffer);
+    }
+  }
+
+  @Deprecated
   public void setUniformMatrix4fv(String name, FloatBuffer mat) {
     use();
     int uniformLocation = GL30.glGetUniformLocation(programID, name);
     GL30.glUniformMatrix4fv(uniformLocation, false, mat);
   }
 
-  public void setUniform1i(String name, IntBuffer buffer) {
+  public void setUniformMatrix4fv(String name, Matrix4f mat) {
+    use();
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      FloatBuffer buffer = mat.get(stack.mallocFloat(16));
+      int uniformLocation = GL30.glGetUniformLocation(programID, name);
+      GL30.glUniformMatrix4fv(uniformLocation, false, buffer);
+    }
+  }
+
+  @Deprecated
+  public void setUniform1iv(String name, IntBuffer buffer) {
     use();
     int uniformLocation = GL30.glGetUniformLocation(programID, name);
     GL30.glUniform1iv(uniformLocation, buffer);
+  }
+
+  public void setUniform1iv(String name, int value) {
+    use();
+    try (MemoryStack ignored = MemoryStack.stackPush()) {
+      IntBuffer buffer = MemoryStack.stackMallocInt(1);
+      buffer.put(value);
+      buffer.flip();
+      int uniformLocation = GL30.glGetUniformLocation(programID, name);
+      GL30.glUniform1iv(uniformLocation, buffer);
+    }
   }
 
   private String readFile(String path) {

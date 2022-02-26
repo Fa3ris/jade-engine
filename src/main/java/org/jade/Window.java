@@ -449,6 +449,7 @@ public class Window {
       texturedQuad.render();
     } else {
       layingTile.render();
+      updatingTriangles.render();
     }
   }
 
