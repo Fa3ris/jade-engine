@@ -11,6 +11,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -164,8 +165,11 @@ public class TexturedQuad {
   }
 
 
-  public void setTransform(FloatBuffer buffer) {
-    triangles.shader.setUniformMatrix4fv("transform", buffer);
+  public void applyTransform(Matrix4f matrix4f) {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      FloatBuffer buffer = matrix4f.get(stack.mallocFloat(16));
+      triangles.shader.setUniformMatrix4fv("transform", buffer);
+    }
   }
 
 }

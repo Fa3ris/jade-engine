@@ -272,15 +272,14 @@ public class Window {
 
     logger.info("vector after transform {}", vector4f);
 
-    texturedQuadMat = new Matrix4f().identity() // transformations are applied in reverse order
+    translateThenRotate = new Matrix4f();
+
+    scaleThenRotate = new Matrix4f().identity() // transformations are applied in reverse order
         // the matrix operation on the vector is v' = M*v
         .rotate((float) Math.toRadians(90.0f), new Vector3f(0f, 0f, 1f)) // rotate around z-axis
         .scale(new Vector3f(.5f, .5f, .5f));
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      FloatBuffer buffer = texturedQuadMat.get(stack.mallocFloat(16));
-      texturedQuad.setTransform(buffer);
-    }
 
+    circularRotation = new Matrix4f();
 
   }
 
@@ -295,7 +294,9 @@ public class Window {
 
   private TexturedQuad texturedQuad;
 
-  private Matrix4f texturedQuadMat;
+  private Matrix4f translateThenRotate;
+  private Matrix4f circularRotation;
+  private Matrix4f scaleThenRotate;
 
   private void loop() {
     // Set the clear color
@@ -322,12 +323,15 @@ public class Window {
         logger.debug("update frame {} with step {} s", currentFrame, step);
         updatingTriangles.update(step);
 
-        texturedQuadMat.identity()
-//            .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
-            .translate(new Vector3f(.5f * (float) Math.cos(glfwGetTime()), .5f * (float) Math.sin(glfwGetTime()), 0f));
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-          FloatBuffer buffer = texturedQuadMat.get(stack.mallocFloat(16));
-          texturedQuad.setTransform(buffer);
+        translateThenRotate.identity()
+            .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
+            .translate(new Vector3f(.5f, -.5f, 0f));
+
+        circularRotation.identity()
+            .translate(new Vector3f(
+                .5f * (float) Math.cos(glfwGetTime()),
+                .5f * (float) Math.sin(glfwGetTime()),
+                0f));
 
           /*
           * model matrix : local space -> world space
@@ -350,12 +354,10 @@ public class Window {
              FOV: field of view = angle defining width of near and far planes ~ 45°
              * aspect ratio = width / height
           *
-          * after mapping to -1;1 normalized device coordinate
+          * viewport transform: after mapping to -1;1 normalized device coordinate
           * use viewPort dimension (glViewport) to map to physical screen
           *
           *  */
-
-        }
 
         accumulator -= step;
       }
@@ -431,6 +433,14 @@ public class Window {
     } else if (false) {
       coloredTriangle.render();
     } else {
+
+      texturedQuad.applyTransform(translateThenRotate);
+      texturedQuad.render();
+
+      texturedQuad.applyTransform(circularRotation);
+      texturedQuad.render();
+
+      texturedQuad.applyTransform(scaleThenRotate);
       texturedQuad.render();
     }
   }
