@@ -308,6 +308,18 @@ public class Window {
   private LayingTile layingTile;
 
   private Cube cube;
+  private Vector3f[] cubePositions = {
+      new Vector3f( 0.0f,  0.0f,  0.0f),
+  new Vector3f( 2.0f,  5.0f, -15.0f),
+  new Vector3f(-1.5f, -2.2f, -2.5f),
+  new Vector3f(-3.8f, -2.0f, -12.3f),
+  new Vector3f( 2.4f, -0.4f, -3.5f),
+  new Vector3f(-1.7f,  3.0f, -7.5f),
+  new Vector3f( 1.3f, -2.0f, -2.5f),
+  new Vector3f( 1.5f,  2.0f, -2.5f),
+  new Vector3f( 1.5f,  0.2f, -1.5f),
+  new Vector3f(-1.3f,  1.0f, -1.5f)
+};
 
   private void loop() {
     // Set the clear color
@@ -425,16 +437,13 @@ public class Window {
       gradientTriangle.render();
       singleTriangle.render();
     }
-    boolean useTwoTriangles = false;
-    boolean useLinkedTriangle = false;
-    if (useTwoTriangles) {
+    if (false) {
       twoTriangles.render();
-    } else if (useLinkedTriangle) {
+    } else if (false) {
       linkedTriangle.render();
     } else if (false) {
       triangle1.render();
-      boolean useYellow = true;
-      if (useYellow) {
+      if (true) {
         yellowTriangle.render();
       } else {
         triangle2.render();
@@ -457,7 +466,11 @@ public class Window {
       layingTile.render();
       updatingTriangles.render();
     } else {
-      cube.render();
+      for (int i = 0; i < cubePositions.length; i++) {
+        cube.setTranslation(cubePositions[i]);
+        cube.setRotationOffset(20 * i);
+        cube.render();
+      }
     }
   }
 

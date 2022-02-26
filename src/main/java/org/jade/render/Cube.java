@@ -25,6 +25,11 @@ public class Cube {
   private final Matrix4f rotation = new Matrix4f();
   private final Vector3f rotationAxis = new Vector3f(.5f, 1f, 0f);
 
+  private final Matrix4f projection = new Matrix4f();
+
+  private Vector3f translation;
+  private int rotationOffset;
+
   public Cube() {
 
     float[] vertices = {
@@ -88,15 +93,41 @@ public class Cube {
 
     smileyTexture = new Texture("textures/awesomeface.png", GL_RGBA);
     smileyTexture.load(true);
+
+    // static too
+    Vector3f moveSceneForward = new Vector3f(0f, 0f, -3f);
+    Matrix4f view = new Matrix4f();
+    view.translate(moveSceneForward); // move the entire scene forward == move camera backwards
+
+    projection.perspective(
+        (float) Math.toRadians(45f), // field of view
+        800f/600f, // aspect ratio
+        0.1f, // near plane
+        100f, // far plane
+        false); // z axis in range 0:1 of -1:1
+
+    projection.mul(view); // result is stored in projection
+  }
+
+
+  public void setTranslation(Vector3f translation) {
+    this.translation = translation;
+  }
+
+  public void setRotationOffset(int offset) {
+    rotationOffset = offset;
   }
 
   public void render() {
+    rotation.identity();
 
+    if (translation != null) {
+      rotation.translate(translation);
+    }
 
-    triangles.shader.setUniformMatrix4fv("transform",
-        rotation.identity()
-            .rotate((float) (glfwGetTime() * Math.toRadians(50f)), rotationAxis)
-    );
+    rotation.rotate((float) (glfwGetTime() * Math.toRadians(50f) + rotationOffset), rotationAxis);
+
+    triangles.shader.setUniformMatrix4fv("transform", new Matrix4f(projection).mul(rotation));
 
     wallTexture.use(GL_TEXTURE0);
     smileyTexture.use(GL_TEXTURE1);
