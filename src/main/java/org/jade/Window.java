@@ -4,7 +4,11 @@ package org.jade;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_MAXIMIZED;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
@@ -326,6 +330,9 @@ public class Window {
   private Matrix4f scaleThenRotate;
 
 
+  private final Vector3f cameraFront = new Vector3f(0f, 0f, -1f); // fixed direction - look forward
+
+
   private LayingTile layingTile;
 
   private Cube cube;
@@ -347,6 +354,8 @@ public class Window {
   private Vector3f cameraRight;
   private Vector3f cameraUp;
   private Matrix4f lookAt;
+
+  private final Vector3f cameraTarget = new Vector3f();
 
   private void loop() {
     // Set the clear color
@@ -442,6 +451,30 @@ public class Window {
         logger.info("space is pressed x: {}, y: {}", MouseListener.instance.x, MouseListener.instance.y);
       }
 
+
+       float cameraSpeed = 0.05f; // adjust accordingly
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
+        logger.info("w pressed");
+        cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
+      }
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
+        logger.info("s pressed");
+        cameraPos.sub(new Vector3f(cameraFront).mul(cameraSpeed));
+
+      }
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
+        logger.info("a pressed");
+        cameraPos.sub(new Vector3f(cameraFront).cross(cameraUp).mul(cameraSpeed));
+      }
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
+        logger.info("d pressed");
+        cameraPos.add(new Vector3f(cameraFront).cross(cameraUp).mul(cameraSpeed));
+
+      }
       if (MouseListener.isButtonPressed(GLFW_MOUSE_BUTTON_1)) {
         logger.info("mouse button {} is pressed at x: {}, y: {}, dragging: {}",
             GLFW_MOUSE_BUTTON_1,
@@ -511,12 +544,17 @@ public class Window {
       layingTile.render();
       updatingTriangles.render();
     } else {
-      // circle around Y-axis
-      float radius = 20f;
-      cameraPos.x = (float) Math.sin(glfwGetTime()) * radius - 10;
-      cameraPos.z = (float) Math.cos(glfwGetTime()) * radius;
+      if (false) {
+        // circle around Y-axis
+        float radius = 20f;
+        cameraPos.x = (float) Math.sin(glfwGetTime()) * radius - 10;
+        cameraPos.z = (float) Math.cos(glfwGetTime()) * radius;
+      }
       lookAt.identity() // need to reset
-          .lookAt(cameraPos, worldOrigin, worldUp);
+          .lookAt(cameraPos,
+//              worldOrigin,
+              cameraTarget.set(cameraPos).add(cameraFront),
+              cameraUp);
       cube.setView(lookAt);
       for (int i = 0; i < cubePositions.length; i++) {
         cube.setTranslation(cubePositions[i]);
