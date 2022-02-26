@@ -45,6 +45,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.GradientTriangle;
+import org.jade.render.LayingTile;
 import org.jade.render.SingleTriangle;
 import org.jade.render.TexturedQuad;
 import org.jade.render.Triangles;
@@ -281,6 +282,7 @@ public class Window {
 
     circularRotation = new Matrix4f();
 
+    layingTile = new LayingTile();
   }
 
   private Triangles twoTriangles;
@@ -297,6 +299,9 @@ public class Window {
   private Matrix4f translateThenRotate;
   private Matrix4f circularRotation;
   private Matrix4f scaleThenRotate;
+
+
+  private LayingTile layingTile;
 
   private void loop() {
     // Set the clear color
@@ -432,7 +437,7 @@ public class Window {
       updatingTriangles.render();
     } else if (false) {
       coloredTriangle.render();
-    } else {
+    } else if (false) {
 
       texturedQuad.applyTransform(translateThenRotate);
       texturedQuad.render();
@@ -442,6 +447,8 @@ public class Window {
 
       texturedQuad.applyTransform(scaleThenRotate);
       texturedQuad.render();
+    } else {
+      layingTile.render();
     }
   }
 
