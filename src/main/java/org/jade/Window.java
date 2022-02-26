@@ -36,6 +36,7 @@ import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -44,6 +45,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
+import org.jade.render.Cube;
 import org.jade.render.GradientTriangle;
 import org.jade.render.LayingTile;
 import org.jade.render.SingleTriangle;
@@ -283,6 +285,8 @@ public class Window {
     circularRotation = new Matrix4f();
 
     layingTile = new LayingTile();
+
+    cube = new Cube();
   }
 
   private Triangles twoTriangles;
@@ -302,6 +306,8 @@ public class Window {
 
 
   private LayingTile layingTile;
+
+  private Cube cube;
 
   private void loop() {
     // Set the clear color
@@ -369,7 +375,7 @@ public class Window {
 
       prevTime = newTime;
 
-      glClear(GL_COLOR_BUFFER_BIT); // clear the frame buffer
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the frame buffer and depth buffer
 
       render();
 
@@ -447,9 +453,11 @@ public class Window {
 
       texturedQuad.applyTransform(scaleThenRotate);
       texturedQuad.render();
-    } else {
+    } else if (false) {
       layingTile.render();
       updatingTriangles.render();
+    } else {
+      cube.render();
     }
   }
 

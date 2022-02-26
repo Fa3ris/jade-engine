@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_LINE;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
@@ -39,14 +40,33 @@ public class Triangles {
 
   private final int indicesCount;
 
+  private DrawMode drawMode;
+  private enum DrawMode {
+    ELEMENTS,
+    ARRAY
+  }
+
+  private int first, count;
+
   public Triangles(float[] vertices, int[] indices) {
-
     this(vertices, indices, "shaders/triangle/vertexShader.glsl", "shaders/triangle/fragmentShader.glsl");
+  }
 
+  public Triangles(float[] vertices, int first, int count, String vertexPath, String fragmentPath) {
+    this(vertices, null, vertexPath, fragmentPath);
+    this.first = first;
+    this.count = count;
   }
 
   public Triangles(float[] vertices, int[] indices, String vertexPath, String fragmentPath) {
-    indicesCount = indices.length;
+
+    if (indices != null) {
+      indicesCount = indices.length;
+      drawMode = DrawMode.ELEMENTS;
+    } else {
+      indicesCount = 0;
+      drawMode = DrawMode.ARRAY;
+    }
 
     vaoID = glGenVertexArrays();
     glBindVertexArray(vaoID);
@@ -60,7 +80,8 @@ public class Triangles {
       glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
     }
 
-    // describe vertex attribute
+    // default describe vertex attribute
+    // TODO remove
     glVertexAttribPointer(
         0,
         3,
@@ -71,15 +92,21 @@ public class Triangles {
 
     glEnableVertexAttribArray(0);
 
-    eboID = glGenBuffers();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+    if (drawMode == DrawMode.ELEMENTS) {
+      eboID = glGenBuffers();
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
 
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      IntBuffer indicesBuffer = stackMallocInt(indicesCount);
-      indicesBuffer.put(indices).flip();
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
+      try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+        IntBuffer indicesBuffer = stackMallocInt(indicesCount);
+        indicesBuffer.put(indices).flip();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
+      }
+    } else {
+      eboID = 0;
     }
 
+    // unbind everything
+    // TODO not necessary ?
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -112,11 +139,20 @@ public class Triangles {
     shader.use();
     glBindVertexArray(vaoID);
 
-    glDrawElements(
-        GL_TRIANGLES,
-        indicesCount, // number of vertices
-        GL_UNSIGNED_INT, // type of index values
-        0); // where to start if index buffer object is bound
+    if (drawMode == DrawMode.ELEMENTS) {
+      glDrawElements(
+          GL_TRIANGLES,
+          indicesCount, // number of vertices
+          GL_UNSIGNED_INT, // type of index values
+          0); // where to start if index buffer object is bound
+    } else if (drawMode == DrawMode.ARRAY) {
+      glDrawArrays(
+          GL_TRIANGLES,
+          first,
+          count
+      );
+    }
+
 
     if (useWireFrame) { // FILL MODE
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
