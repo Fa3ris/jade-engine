@@ -452,26 +452,26 @@ public class Window {
       }
 
 
-       float cameraSpeed = 0.05f; // adjust accordingly
+       float cameraSpeed = 2.5f * (float) step; // or can use elapsed = delta time
 
       if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
-        logger.info("w pressed");
+        logger.info("w pressed at {}", cameraSpeed);
         cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
-        logger.info("s pressed");
+        logger.info("s pressed at {}", cameraSpeed);
         cameraPos.sub(new Vector3f(cameraFront).mul(cameraSpeed));
 
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
-        logger.info("a pressed");
+        logger.info("a pressed at {}", cameraSpeed);
         cameraPos.sub(new Vector3f(cameraFront).cross(cameraUp).mul(cameraSpeed));
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
-        logger.info("d pressed");
+        logger.info("d pressed at {}", cameraSpeed);
         cameraPos.add(new Vector3f(cameraFront).cross(cameraUp).mul(cameraSpeed));
 
       }
