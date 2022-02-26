@@ -118,6 +118,10 @@ public class Cube {
     rotationOffset = offset;
   }
 
+  public void setView(Matrix4f view) {
+    triangles.shader.setUniformMatrix4fv("view", view);
+  }
+
   public void render() {
     rotation.identity();
 

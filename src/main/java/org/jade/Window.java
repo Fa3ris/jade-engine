@@ -42,7 +42,6 @@ import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.Cube;
@@ -287,7 +286,29 @@ public class Window {
     layingTile = new LayingTile();
 
     cube = new Cube();
+
+    cameraPos = new Vector3f(0f, 0f, 3f);
+
+    worldOrigin = new Vector3f(0f, 0f, 0f);
+
+    // The name direction vector is not the best chosen name,
+    // since it is actually pointing in the reverse direction of what it is targeting.
+    cameraDirection = new Vector3f(cameraPos).sub(worldOrigin).normalize();
+
+
+    worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
+    cameraRight = new Vector3f(worldUp).cross(cameraDirection).normalize(); // n.b.: direction points from origin to the camera
+
+    cameraUp = new Vector3f(cameraDirection).cross(cameraRight).normalize();
+
+    lookAt = new Matrix4f().lookAt(cameraPos, worldOrigin, worldUp);
+
+    cube.setView(lookAt);
   }
+
+  private Vector3f worldOrigin;
+
+  private Vector3f worldUp;
 
   private Triangles twoTriangles;
   private Triangles triangle1;
@@ -320,6 +341,12 @@ public class Window {
   new Vector3f( 1.5f,  0.2f, -1.5f),
   new Vector3f(-1.3f,  1.0f, -1.5f)
 };
+
+  private Vector3f cameraPos;
+  private Vector3f cameraDirection;
+  private Vector3f cameraRight;
+  private Vector3f cameraUp;
+  private Matrix4f lookAt;
 
   private void loop() {
     // Set the clear color
@@ -382,6 +409,24 @@ public class Window {
           *
           *  */
 
+
+        /*
+        * define camera/view space
+        *
+        * set camera as the origin of the scene
+        *
+        * view matrix: transforms world space to coordinates relative to camera position and direction
+        *
+        * define the basis of the camera = {position, looking direction, right direction, up direction}
+        *
+        * relative to the world space
+        *
+        *
+        * lookAt matrix: 4x4 matrix using camera basis
+        *
+        * view coord = lookAt * world coord
+        *
+        * */
         accumulator -= step;
       }
 
@@ -466,6 +511,13 @@ public class Window {
       layingTile.render();
       updatingTriangles.render();
     } else {
+      // circle around Y-axis
+      float radius = 20f;
+      cameraPos.x = (float) Math.sin(glfwGetTime()) * radius - 10;
+      cameraPos.z = (float) Math.cos(glfwGetTime()) * radius;
+      lookAt.identity() // need to reset
+          .lookAt(cameraPos, worldOrigin, worldUp);
+      cube.setView(lookAt);
       for (int i = 0; i < cubePositions.length; i++) {
         cube.setTranslation(cubePositions[i]);
         cube.setRotationOffset(20 * i);
