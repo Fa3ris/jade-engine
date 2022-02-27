@@ -109,6 +109,17 @@ public class Cube {
     triangles.shader.setUniformMatrix4fv("projection", projection);
   }
 
+  public void setFOV(double angleDegree) {
+    Matrix4f projection = new Matrix4f()
+        .perspective(
+            (float) Math.toRadians(angleDegree), // field of view
+            800f/600f, // aspect ratio
+            0.1f, // near plane
+            100f, // far plane
+            false); // z axis in range 0:1 of -1:1
+
+    triangles.shader.setUniformMatrix4fv("projection", projection);
+  }
 
   public void setTranslation(Vector3f translation) {
     this.translation = translation;

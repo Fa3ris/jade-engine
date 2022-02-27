@@ -365,6 +365,8 @@ public class Window {
 
   private final Vector3f cameraTarget = new Vector3f();
 
+  float fov = 45f;
+
   private final Vector3f tempVec3 = new Vector3f();
 
   private void loop() {
@@ -535,6 +537,17 @@ public class Window {
         cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math
             .cos(Math.toRadians(pitch)));
         cameraDirection.normalize();
+      }
+
+      if (MouseListener.instance.scrollY != 0) {
+          fov -= MouseListener.instance.scrollY;
+
+        if (fov < 1.0f)
+          fov = 1.0f;
+        if (fov > 45.0f)
+          fov = 45.0f;
+
+        cube.setFOV(fov);
       }
       endFrame();
     }
