@@ -291,21 +291,27 @@ public class Window {
 
     cube = new Cube();
 
-    cameraPos = new Vector3f(0f, 0f, 3f);
+    cameraPosition = new Vector3f(0f, 0f, 3f);
 
     worldOrigin = new Vector3f(0f, 0f, 0f);
 
     // The name direction vector is not the best chosen name,
     // since it is actually pointing in the reverse direction of what it is targeting.
-    cameraDirection = new Vector3f(cameraPos).sub(worldOrigin).normalize();
+    cameraDirection = new Vector3f(cameraPosition).sub(worldOrigin).normalize();
 
+    yaw = -90d;
 
+    cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+    cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
+    cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+
+    logger.info("camera pointing at {}", cameraDirection);
     worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
     cameraRight = new Vector3f(worldUp).cross(cameraDirection).normalize(); // n.b.: direction points from origin to the camera
 
     cameraUp = new Vector3f(cameraDirection).cross(cameraRight).normalize();
 
-    lookAt = new Matrix4f().lookAt(cameraPos, worldOrigin, worldUp);
+    lookAt = new Matrix4f().setLookAt(cameraPosition, worldOrigin, worldUp);
 
     cube.setView(lookAt);
   }
@@ -329,6 +335,7 @@ public class Window {
   private Matrix4f circularRotation;
   private Matrix4f scaleThenRotate;
 
+  private double yaw, pitch;
 
   private final Vector3f cameraFront = new Vector3f(0f, 0f, -1f); // fixed direction - look forward
 
@@ -349,13 +356,15 @@ public class Window {
   new Vector3f(-1.3f,  1.0f, -1.5f)
 };
 
-  private Vector3f cameraPos;
+  private Vector3f cameraPosition;
   private Vector3f cameraDirection;
   private Vector3f cameraRight;
   private Vector3f cameraUp;
   private Matrix4f lookAt;
 
   private final Vector3f cameraTarget = new Vector3f();
+
+  private final Vector3f tempVec3 = new Vector3f();
 
   private void loop() {
     // Set the clear color
@@ -436,6 +445,18 @@ public class Window {
         * view coord = lookAt * world coord
         *
         * */
+
+
+        /*
+        * Euler angle
+        * yaw : precession = psi = rotation autour de l'axe vertical
+        * pitch: nutation = theta = l'inclinaison par rapport à l'axe vertical
+        * roll: rotation/giration = phi = rotation de l'objet sur lui-même
+        *
+        *
+        * for the camera
+        * given a pitch and yaw, find a corresponding direction to affect to cameraFront
+        * */
         accumulator -= step;
       }
 
@@ -456,23 +477,23 @@ public class Window {
 
       if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
         logger.info("w pressed at {}", cameraSpeed);
-        cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
+        cameraPosition.add(tempVec3.set(cameraDirection).mul(cameraSpeed));
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
         logger.info("s pressed at {}", cameraSpeed);
-        cameraPos.sub(new Vector3f(cameraFront).mul(cameraSpeed));
+        cameraPosition.sub(tempVec3.set(cameraDirection).mul(cameraSpeed));
 
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
         logger.info("a pressed at {}", cameraSpeed);
-        cameraPos.sub(new Vector3f(cameraFront).cross(cameraUp).mul(cameraSpeed));
+        cameraPosition.sub(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
         logger.info("d pressed at {}", cameraSpeed);
-        cameraPos.add(new Vector3f(cameraFront).cross(cameraUp).mul(cameraSpeed));
+        cameraPosition.add(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
 
       }
       if (MouseListener.isButtonPressed(GLFW_MOUSE_BUTTON_1)) {
@@ -547,13 +568,12 @@ public class Window {
       if (false) {
         // circle around Y-axis
         float radius = 20f;
-        cameraPos.x = (float) Math.sin(glfwGetTime()) * radius - 10;
-        cameraPos.z = (float) Math.cos(glfwGetTime()) * radius;
+        cameraPosition.x = (float) Math.sin(glfwGetTime()) * radius - 10;
+        cameraPosition.z = (float) Math.cos(glfwGetTime()) * radius;
       }
-      lookAt.identity() // need to reset
-          .lookAt(cameraPos,
-//              worldOrigin,
-              cameraTarget.set(cameraPos).add(cameraFront),
+      lookAt.setLookAt(
+          cameraPosition,
+              cameraTarget.set(cameraPosition).add(cameraDirection),
               cameraUp);
       cube.setView(lookAt);
       for (int i = 0; i < cubePositions.length; i++) {
