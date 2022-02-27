@@ -304,6 +304,7 @@ public class Window {
     cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
     cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
     cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+    cameraDirection.normalize();
 
     logger.info("camera pointing at {}", cameraDirection);
     worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
@@ -501,6 +502,39 @@ public class Window {
             GLFW_MOUSE_BUTTON_1,
             MouseListener.instance.x, MouseListener.instance.y,
             MouseListener.instance.dragging);
+      }
+
+      boolean updateCamera = false;
+      double sensitivity = .1d;
+      if (MouseListener.instance.x != MouseListener.instance.prevX && MouseListener.instance.dragging) {
+        double xOffset = MouseListener.instance.x - MouseListener.instance.prevX;
+        xOffset *= sensitivity;
+
+        yaw += xOffset;
+        updateCamera = true;
+      }
+
+      if (MouseListener.instance.y != MouseListener.instance.prevY && MouseListener.instance.dragging) {
+        double yOffset = MouseListener.instance.y - MouseListener.instance.prevY;
+        yOffset *= sensitivity;
+        pitch -= yOffset;
+
+        if (pitch > 89.0f)
+          pitch =  89.0f;
+        if (pitch < -89.0f)
+          pitch = -89.0f;
+
+        updateCamera = true;
+      }
+
+
+      if (updateCamera) {
+        cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math
+            .cos(Math.toRadians(pitch)));
+        cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
+        cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math
+            .cos(Math.toRadians(pitch)));
+        cameraDirection.normalize();
       }
       endFrame();
     }
