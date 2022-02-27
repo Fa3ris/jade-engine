@@ -6,6 +6,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_G;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
@@ -299,22 +301,86 @@ public class Window {
     // since it is actually pointing in the reverse direction of what it is targeting.
     cameraDirection = new Vector3f(cameraPosition).sub(worldOrigin).normalize();
 
-    yaw = -90d;
+    pitch = roll = yaw = 0;
 
-    cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
-    cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
-    cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
-    cameraDirection.normalize();
+    roll = 0;
+
+//    cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+//    cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
+//    cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
+//    cameraDirection.normalize();
 
     logger.info("camera pointing at {}", cameraDirection);
+
+    cameraFront = new Vector3f(0f, 0f, -1f); // look forward
+
+//    worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
+//    cameraRight = tempVec3.set(worldUp).cross(cameraDirection).normalize(); // n.b.: direction points from origin to the camera
+
+    // compose three rotations yaw then pitch then roll
+//    matriceDePassage.identity()
+//        .rotateY((float) Math.toRadians(yaw))
+//        .rotateX((float) Math.toRadians(pitch))
+//        .rotateZ((float) Math.toRadians(roll));
+//
+//    matriceDePassage.transformDirection(cameraFront, cameraDirection);
+
+    logger.info("camera front pointing at {}", cameraDirection);
+
     worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
-    cameraRight = new Vector3f(worldUp).cross(cameraDirection).normalize(); // n.b.: direction points from origin to the camera
 
-    cameraUp = new Vector3f(cameraDirection).cross(cameraRight).normalize();
+    cameraUp.set(worldUp);
 
-    lookAt = new Matrix4f().setLookAt(cameraPosition, worldOrigin, worldUp);
+//    cameraRight = tempVec3.set(worldUp).cross(cameraDirection).normalize();
+
+//    cameraUp = tempVec3.set(cameraDirection).cross(cameraRight).normalize();
+//    logger.info("camera up is {}", cameraUp);
+
+//    new Matrix4f().rotate((float) Math.toRadians(roll), cameraDirection).transformDirection(cameraUp);
+
+//    cameraUp.normalize();
+//    logger.info("camera up after is {}", cameraUp);
+//    cameraUp.rotate((float) Math.toRadians(roll));
+
+//    lookAt = new Matrix4f().setLookAt(cameraPosition, cameraDirection, cameraUp);
+
+    lookAt = new Matrix4f();
+    updateLookAt();
 
     cube.setView(lookAt);
+  }
+
+  private void updateLookAt() {
+
+//    cameraFront.set(cameraPosition).sub(cameraDirection).normalize();
+
+    // camera direction
+    matriceDePassage.identity()
+        .rotateY((float) Math.toRadians(yaw))
+        .rotateX((float) Math.toRadians(pitch));
+//        .rotateZ((float) Math.toRadians(roll));
+
+    matriceDePassage.transformDirection(cameraFront, cameraDirection);
+
+    cameraDirection.normalize();
+    logger.trace("camera direction = {}", cameraDirection);
+
+    cameraRight.set(cameraDirection).cross(worldUp).normalize();
+    logger.trace("camera right = {}", cameraRight);
+
+    cameraUp.set(cameraDirection).cross(cameraRight).normalize();
+
+    logger.trace("camera up = {}", cameraUp);
+
+    Matrix4f rotation = new Matrix4f().rotate((float) Math.toRadians(roll), cameraDirection);
+    rotation.transformDirection(cameraUp).normalize();
+//    cameraFront.set(cameraDirection).sub(cameraPosition);
+//    rotation.transformDirection(cameraFront).normalize();
+
+    logger.info("\npos = {}\ndirection = {}\nup= {}", cameraPosition, cameraDirection, cameraUp);
+    lookAt = lookAt.setLookAt(cameraPosition,
+        cameraTarget.set(cameraPosition).add(cameraDirection),
+        cameraUp);
   }
 
   private Vector3f worldOrigin;
@@ -336,10 +402,11 @@ public class Window {
   private Matrix4f circularRotation;
   private Matrix4f scaleThenRotate;
 
-  private double yaw, pitch;
+  private double yaw, pitch, roll;
 
-  private final Vector3f cameraFront = new Vector3f(0f, 0f, -1f); // fixed direction - look forward
+  private Vector3f cameraFront; // fixed direction - look forward
 
+  private final Matrix4f matriceDePassage = new Matrix4f();
 
   private LayingTile layingTile;
 
@@ -359,8 +426,8 @@ public class Window {
 
   private Vector3f cameraPosition;
   private Vector3f cameraDirection;
-  private Vector3f cameraRight;
-  private Vector3f cameraUp;
+  private final Vector3f cameraRight = new Vector3f();
+  private final Vector3f cameraUp = new Vector3f();
   private Matrix4f lookAt;
 
   private final Vector3f cameraTarget = new Vector3f();
@@ -476,37 +543,61 @@ public class Window {
       }
 
 
+      boolean updateCamera = false;
        float cameraSpeed = 2.5f * (float) step; // or can use elapsed = delta time
+
 
       if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
         logger.info("w pressed at {}", cameraSpeed);
         cameraPosition.add(tempVec3.set(cameraDirection).mul(cameraSpeed));
+        updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
         logger.info("s pressed at {}", cameraSpeed);
         cameraPosition.sub(tempVec3.set(cameraDirection).mul(cameraSpeed));
+        updateCamera = true;
 
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
         logger.info("a pressed at {}", cameraSpeed);
         cameraPosition.sub(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
+        updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
         logger.info("d pressed at {}", cameraSpeed);
         cameraPosition.add(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
+        updateCamera = true;
 
       }
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_F)) { // roll left
+        logger.info("f pressed at {}", roll);
+        roll--;
+//        cameraFront.set(cameraPosition).add(cameraDirection).normalize();
+//        pitch = yaw = 0;
+        updateCamera = true;
+      }
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_G)) { // roll right
+        logger.info("g pressed at {}", roll);
+        roll++;
+//        cameraFront.set(cameraPosition).add(cameraDirection).normalize();
+//        pitch = yaw = 0;
+        updateCamera = true;
+      }
+
       if (MouseListener.isButtonPressed(GLFW_MOUSE_BUTTON_1)) {
         logger.info("mouse button {} is pressed at x: {}, y: {}, dragging: {}",
             GLFW_MOUSE_BUTTON_1,
             MouseListener.instance.x, MouseListener.instance.y,
             MouseListener.instance.dragging);
+        updateCamera = true;
       }
 
-      boolean updateCamera = false;
+
       double sensitivity = .1d;
       if (MouseListener.instance.x != MouseListener.instance.prevX && MouseListener.instance.dragging) {
         double xOffset = MouseListener.instance.x - MouseListener.instance.prevX;
@@ -519,7 +610,7 @@ public class Window {
       if (MouseListener.instance.y != MouseListener.instance.prevY && MouseListener.instance.dragging) {
         double yOffset = MouseListener.instance.y - MouseListener.instance.prevY;
         yOffset *= sensitivity;
-        pitch -= yOffset;
+        pitch += yOffset;
 
         if (pitch > 89.0f)
           pitch =  89.0f;
@@ -531,12 +622,27 @@ public class Window {
 
 
       if (updateCamera) {
-        cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math
-            .cos(Math.toRadians(pitch)));
-        cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
-        cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math
-            .cos(Math.toRadians(pitch)));
-        cameraDirection.normalize();
+        updateLookAt();
+        cube.setView(lookAt);
+//        cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math
+//            .cos(Math.toRadians(pitch)));
+//        cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
+//        cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math
+//            .cos(Math.toRadians(pitch)));
+//        cameraDirection.normalize();
+
+        // compose three rotations yaw then pitch then roll
+        // compose three rotations yaw then pitch then roll
+//        matriceDePassage.identity()
+//            .rotateY((float) Math.toRadians(yaw))
+//            .rotateX((float) Math.toRadians(pitch))
+//            .rotateZ((float) Math.toRadians(roll));
+//
+//        matriceDePassage.transformDirection(cameraFront, cameraDirection);
+//
+//        cameraDirection.normalize();
+//
+//        logger.info("rotate yaw = {} pitch = {} camera is now {}", yaw, pitch, cameraDirection);
       }
 
       if (MouseListener.instance.scrollY != 0) {
@@ -617,12 +723,14 @@ public class Window {
         float radius = 20f;
         cameraPosition.x = (float) Math.sin(glfwGetTime()) * radius - 10;
         cameraPosition.z = (float) Math.cos(glfwGetTime()) * radius;
+        lookAt.setLookAt(
+            cameraPosition,
+                cameraTarget.set(cameraPosition).add(cameraDirection),
+                cameraUp);
       }
-      lookAt.setLookAt(
-          cameraPosition,
-              cameraTarget.set(cameraPosition).add(cameraDirection),
-              cameraUp);
-      cube.setView(lookAt);
+
+//      updateLookAt();
+//      cube.setView(lookAt);
       for (int i = 0; i < cubePositions.length; i++) {
         cube.setTranslation(cubePositions[i]);
         cube.setRotationOffset(20 * i);
