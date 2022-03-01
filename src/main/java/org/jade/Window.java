@@ -57,6 +57,7 @@ import org.jade.render.SingleTriangle;
 import org.jade.render.TexturedQuad;
 import org.jade.render.Triangles;
 import org.jade.render.UpdatingTriangles;
+import org.jade.render.camera.Camera;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -85,6 +86,7 @@ public class Window {
 
   private int currentFrame = 0;
 
+  private Camera camera = new Camera();
 
   private Window() {
     w = 1920;
@@ -346,16 +348,22 @@ public class Window {
 
     lookAt = new Matrix4f();
     updateLookAt();
+    if (false) {
 
     cube.setView(lookAt);
+    }
+
+    cube.setView(camera.getLookAt());
   }
 
   private void updateLookAt() {
 
 //    cameraFront.set(cameraPosition).sub(cameraDirection).normalize();
 
+    logger.info("yaw = {}, pitch = {}, roll = {}", yaw, pitch, roll);
     // camera direction
     matriceDePassage.identity()
+        .rotateZ((float) Math.toRadians(roll))
         .rotateY((float) Math.toRadians(yaw))
         .rotateX((float) Math.toRadians(pitch));
 //        .rotateZ((float) Math.toRadians(roll));
@@ -550,12 +558,14 @@ public class Window {
       if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
         logger.info("w pressed at {}", cameraSpeed);
         cameraPosition.add(tempVec3.set(cameraDirection).mul(cameraSpeed));
+        camera.forward();
         updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
         logger.info("s pressed at {}", cameraSpeed);
         cameraPosition.sub(tempVec3.set(cameraDirection).mul(cameraSpeed));
+        camera.backward();
         updateCamera = true;
 
       }
@@ -563,12 +573,14 @@ public class Window {
       if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
         logger.info("a pressed at {}", cameraSpeed);
         cameraPosition.sub(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
+        camera.strafeLeft();
         updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
         logger.info("d pressed at {}", cameraSpeed);
         cameraPosition.add(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
+        camera.strafeRight();
         updateCamera = true;
 
       }
@@ -576,6 +588,7 @@ public class Window {
       if (KeyListener.isKeyPressed(GLFW_KEY_F)) { // roll left
         logger.info("f pressed at {}", roll);
         roll--;
+        camera.roll(-1);
 //        cameraFront.set(cameraPosition).add(cameraDirection).normalize();
 //        pitch = yaw = 0;
         updateCamera = true;
@@ -584,6 +597,7 @@ public class Window {
       if (KeyListener.isKeyPressed(GLFW_KEY_G)) { // roll right
         logger.info("g pressed at {}", roll);
         roll++;
+        camera.roll(1);
 //        cameraFront.set(cameraPosition).add(cameraDirection).normalize();
 //        pitch = yaw = 0;
         updateCamera = true;
@@ -605,6 +619,8 @@ public class Window {
 
         yaw += xOffset;
         updateCamera = true;
+        logger.info("mouse x");
+        camera.yaw(xOffset);
       }
 
       if (MouseListener.instance.y != MouseListener.instance.prevY && MouseListener.instance.dragging) {
@@ -617,13 +633,21 @@ public class Window {
         if (pitch < -89.0f)
           pitch = -89.0f;
 
+        logger.info("mouse y");
+        camera.pitch(yOffset);
         updateCamera = true;
       }
 
 
       if (updateCamera) {
         updateLookAt();
+      if (false) {
+
         cube.setView(lookAt);
+      }
+
+      logger.info("camera look at {}", camera.getLookAt());
+      cube.setView(camera.getLookAt());
 //        cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math
 //            .cos(Math.toRadians(pitch)));
 //        cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
