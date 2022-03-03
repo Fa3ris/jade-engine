@@ -58,6 +58,7 @@ import org.jade.render.TexturedQuad;
 import org.jade.render.Triangles;
 import org.jade.render.UpdatingTriangles;
 import org.jade.render.camera.Camera;
+import org.jade.scenes.SceneManager;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -76,6 +77,8 @@ public class Window {
   private static final Logger logger = LoggerFactory.getLogger(Window.class);
 
   public static boolean faulty = false;
+
+  private SceneManager sceneManager;
 
   private long windowHandle;
   private int w, h;
@@ -354,6 +357,8 @@ public class Window {
     }
 
     cube.setView(camera.getLookAt());
+
+    sceneManager = new SceneManager();
   }
 
   private void updateLookAt() {
@@ -536,6 +541,7 @@ public class Window {
         * given a pitch and yaw, find a corresponding direction to affect to cameraFront
         * */
         accumulator -= step;
+        sceneManager.update(step);
       }
 
       prevTime = newTime;
