@@ -544,6 +544,14 @@ public class Window {
         sceneManager.update(step);
       }
 
+      /*
+      Définition générale :
+
+        entité = un id uniquement
+        composant = data
+        système = algos
+       */
+
       prevTime = newTime;
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the frame buffer and depth buffer
