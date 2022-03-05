@@ -669,6 +669,9 @@ public class Window {
 
       logger.info("camera look at {}", camera.getLookAt());
       cube.setView(camera.getLookAt());
+
+      configuredSceneManager.updateCamera(camera);
+
 //        cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math
 //            .cos(Math.toRadians(pitch)));
 //        cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jade.render.camera.Camera;
 
 public class SceneManager implements ChangeSceneCallback {
 
@@ -40,6 +41,10 @@ public class SceneManager implements ChangeSceneCallback {
 
   public void render() {
     currentScene.render();
+  }
+
+  public void updateCamera(Camera camera) {
+    currentScene.updateCamera(camera);
   }
 
   public void changeScene(SceneType scene) {

@@ -1,5 +1,7 @@
 package org.jade.scenes;
 
+import org.jade.render.camera.Camera;
+
 public abstract class AbstractScene implements Scene {
 
   protected ChangeSceneCallback changeSceneCallback;
@@ -18,6 +20,11 @@ public abstract class AbstractScene implements Scene {
 
   @Override
   public void render() {
+  }
+
+  @Override
+  public void updateCamera(Camera camera) {
+
   }
 
   @Override

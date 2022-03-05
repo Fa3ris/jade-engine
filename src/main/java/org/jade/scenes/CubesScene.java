@@ -2,6 +2,7 @@ package org.jade.scenes;
 
 import org.jade.render.Cube;
 import org.jade.render.Triangles;
+import org.jade.render.camera.Camera;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ public class CubesScene extends AbstractScene {
 
   private Cube cube;
 
-  private Vector3f[] cubePositions = {
+  private final Vector3f[] cubePositions = {
       new Vector3f( 0.0f,  0.0f,  0.0f),
       new Vector3f( 2.0f,  5.0f, -15.0f),
       new Vector3f(-1.5f, -2.2f, -2.5f),
@@ -29,6 +30,11 @@ public class CubesScene extends AbstractScene {
   public void load() {
 
     cube = new Cube();
+  }
+
+  @Override
+  public void updateCamera(Camera camera) {
+    cube.setView(camera.getLookAt());
   }
 
   @Override
