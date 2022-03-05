@@ -22,6 +22,7 @@ public class SingleTriangleScene extends AbstractScene {
 
   @Override
   public void unload() {
+    singleTriangle.clean();
     singleTriangle = null;
   }
 }

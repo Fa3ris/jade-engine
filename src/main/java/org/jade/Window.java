@@ -51,9 +51,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.Cube;
-import org.jade.render.GradientTriangle;
 import org.jade.render.LayingTile;
-import org.jade.render.SingleTriangle;
 import org.jade.render.TexturedQuad;
 import org.jade.render.Triangles;
 import org.jade.render.UpdatingTriangles;
@@ -78,8 +76,6 @@ public class Window {
   private static final Logger logger = LoggerFactory.getLogger(Window.class);
 
   public static boolean faulty = false;
-
-  private SceneManager sceneManager;
 
   private SceneManager configuredSceneManager;
 
@@ -116,7 +112,6 @@ public class Window {
 
   }
 
-  private SingleTriangle singleTriangle;
 
   private void init() {
 
@@ -219,7 +214,6 @@ public class Window {
       glfwSwapBuffers(windowHandle); // swap the color buffers
     });
 
-    singleTriangle = new SingleTriangle();
 
     float[] vertices = {
         -.5f, -.5f, 0f, // left
@@ -234,7 +228,6 @@ public class Window {
         1, 3, 4
     };
 
-    twoTriangles = new Triangles(vertices, indices);
 
     int[] tri1Ind  = {
         0, 1, 2,
@@ -359,8 +352,6 @@ public class Window {
 
     cube.setView(camera.getLookAt());
 
-    sceneManager = new SceneManager();
-
     configuredSceneManager = SceneManagerFactory.createInstance();
   }
 
@@ -403,7 +394,6 @@ public class Window {
 
   private Vector3f worldUp;
 
-  private Triangles twoTriangles;
   private Triangles triangle1;
   private Triangles triangle2;
   private Triangles yellowTriangle;
@@ -546,7 +536,6 @@ public class Window {
         * given a pitch and yaw, find a corresponding direction to affect to cameraFront
         * */
         accumulator -= step;
-        sceneManager.update(step);
       }
 
       /*
@@ -736,10 +725,8 @@ public class Window {
     configuredSceneManager.render();
 
     if (false) {
-      singleTriangle.render();
     }
     if (false) {
-      twoTriangles.render();
     } else if (false) {
       linkedTriangle.render();
     } else if (false) {
@@ -795,8 +782,6 @@ public class Window {
   private void cleanup() {
     logger.debug("clean window");
 
-    singleTriangle.clean();
-    twoTriangles.clean();
 
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
