@@ -38,6 +38,7 @@ public class YellowTriangleScene extends AbstractScene {
 
   @Override
   public void unload() {
+    yellowTriangle.clean();
     yellowTriangle = null;
   }
 }

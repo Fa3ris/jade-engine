@@ -36,6 +36,7 @@ public class Triangle1Scene extends AbstractScene {
 
   @Override
   public void unload() {
+    triangle1.clean();
     triangle1 = null;
   }
 }

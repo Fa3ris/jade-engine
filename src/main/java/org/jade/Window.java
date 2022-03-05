@@ -233,17 +233,11 @@ public class Window {
         0, 1, 2,
     };
 
-    triangle1 = new Triangles(vertices, tri1Ind);
-
     int[] tri2Ind  = {
         1, 3, 4
     };
 
-    triangle2 = new Triangles(vertices, tri2Ind);
 
-    yellowTriangle = new Triangles(vertices, tri2Ind,
-        "shaders/triangle/vertexShader.glsl",
-        "shaders/triangle/fragmentShader-yellow.glsl");
 
     linkedTriangle = new Triangles(vertices, tri2Ind,
         "shaders/link/vertexShader.glsl",
@@ -394,9 +388,6 @@ public class Window {
 
   private Vector3f worldUp;
 
-  private Triangles triangle1;
-  private Triangles triangle2;
-  private Triangles yellowTriangle;
 
   private Triangles linkedTriangle;
   private UpdatingTriangles updatingTriangles;
@@ -730,11 +721,8 @@ public class Window {
     } else if (false) {
       linkedTriangle.render();
     } else if (false) {
-      triangle1.render();
       if (true) {
-        yellowTriangle.render();
       } else {
-        triangle2.render();
       }
     } else if (false){
       updatingTriangles.render();
