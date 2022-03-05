@@ -91,7 +91,7 @@ public class SingleTriangle {
 
   public void render() {
 
-    final boolean useWireFrame = true;
+    final boolean useWireFrame = false;
     if (useWireFrame) { // WIREFRAME MODE
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
