@@ -10,7 +10,8 @@ public interface Scene {
   void load();
   void unload();
 
-  void updateCamera(Camera camera);
+  void setCamera(Camera camera);
+  void setFOV(double angleDegree);
 
   void setChangeSceneCallback(ChangeSceneCallback changeSceneCallback);
 }

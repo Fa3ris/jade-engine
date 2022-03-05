@@ -702,6 +702,8 @@ public class Window {
           fov = 45.0f;
 
         cube.setFOV(fov);
+
+        configuredSceneManager.setFOV(fov);
       }
       endFrame();
     }

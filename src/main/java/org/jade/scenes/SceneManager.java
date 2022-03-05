@@ -44,7 +44,11 @@ public class SceneManager implements ChangeSceneCallback {
   }
 
   public void updateCamera(Camera camera) {
-    currentScene.updateCamera(camera);
+    currentScene.setCamera(camera);
+  }
+
+  public void setFOV(double angleDegree) {
+    currentScene.setFOV(angleDegree);
   }
 
   public void changeScene(SceneType scene) {

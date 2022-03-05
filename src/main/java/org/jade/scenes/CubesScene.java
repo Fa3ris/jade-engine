@@ -33,8 +33,13 @@ public class CubesScene extends AbstractScene {
   }
 
   @Override
-  public void updateCamera(Camera camera) {
+  public void setCamera(Camera camera) {
     cube.setView(camera.getLookAt());
+  }
+
+  @Override
+  public void setFOV(double angleDegree) {
+    cube.setFOV(angleDegree);
   }
 
   @Override

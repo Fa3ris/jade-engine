@@ -23,7 +23,12 @@ public abstract class AbstractScene implements Scene {
   }
 
   @Override
-  public void updateCamera(Camera camera) {
+  public void setCamera(Camera camera) {
+
+  }
+
+  @Override
+  public void setFOV(double angleDegree) {
 
   }
 
