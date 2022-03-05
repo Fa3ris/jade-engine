@@ -24,7 +24,7 @@ public class Entity {
   }
 
   public void addComponent(Component c) {
-    this.components.put(c.getClass().getName(), c);
+    components.put(c.getClass().getName(), c);
     c.entity = this;
   }
 
