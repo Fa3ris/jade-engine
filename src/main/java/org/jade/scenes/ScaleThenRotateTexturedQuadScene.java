@@ -36,6 +36,7 @@ public class ScaleThenRotateTexturedQuadScene extends AbstractScene {
 
   @Override
   public void unload() {
+    texturedQuad.clean();
     texturedQuad = null;
   }
 }

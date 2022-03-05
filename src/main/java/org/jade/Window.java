@@ -51,8 +51,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.render.Cube;
-import org.jade.render.LayingTile;
-import org.jade.render.TexturedQuad;
 import org.jade.render.camera.Camera;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
@@ -243,7 +241,6 @@ public class Window {
     };
 
 
-    texturedQuad = new TexturedQuad();
 
     Vector4f vector4f = new Vector4f(1f, 0f, 0f, 1f);
     // w is the homogeneous coordinate
@@ -255,14 +252,8 @@ public class Window {
 
     logger.info("vector after transform {}", vector4f);
 
-    translateThenRotate = new Matrix4f();
 
-    scaleThenRotate = new Matrix4f().identity() // transformations are applied in reverse order
-        // the matrix operation on the vector is v' = M*v
-        .rotate((float) Math.toRadians(90.0f), new Vector3f(0f, 0f, 1f)) // rotate around z-axis
-        .scale(new Vector3f(.5f, .5f, .5f));
 
-    circularRotation = new Matrix4f();
 
 
     cube = new Cube();
@@ -370,11 +361,6 @@ public class Window {
   private Vector3f worldUp;
 
 
-  private TexturedQuad texturedQuad;
-
-  private Matrix4f translateThenRotate;
-  private Matrix4f circularRotation;
-  private Matrix4f scaleThenRotate;
 
   private double yaw, pitch, roll;
 
@@ -433,15 +419,7 @@ public class Window {
       while (accumulator > step) {
         logger.debug("update frame {} with step {} s", currentFrame, step);
 
-        translateThenRotate.identity()
-            .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
-            .translate(new Vector3f(.5f, -.5f, 0f));
 
-        circularRotation.identity()
-            .translate(new Vector3f(
-                .5f * (float) Math.cos(glfwGetTime()),
-                .5f * (float) Math.sin(glfwGetTime()),
-                0f));
 
         configuredSceneManager.update(step);
 
@@ -702,14 +680,8 @@ public class Window {
     } else if (false) {
     } else if (false) {
 
-      texturedQuad.applyTransform(translateThenRotate);
-      texturedQuad.render();
 
-      texturedQuad.applyTransform(circularRotation);
-      texturedQuad.render();
 
-      texturedQuad.applyTransform(scaleThenRotate);
-      texturedQuad.render();
     } else if (false) {
     } else if (false) {
       if (false) {

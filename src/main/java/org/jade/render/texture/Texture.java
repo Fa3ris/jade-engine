@@ -27,6 +27,7 @@ import org.lwjgl.BufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO clean resources
 public class Texture {
 
   private static final Logger logger = LoggerFactory.getLogger(Texture.class);

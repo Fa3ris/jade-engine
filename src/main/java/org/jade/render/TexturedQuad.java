@@ -59,6 +59,9 @@ public class TexturedQuad {
     triangles.render();
   }
 
+  public void clean() {
+    triangles.clean();
+  }
 
   public void applyTransform(Matrix4f matrix4f) {
     triangles.shader.setUniformMatrix4fv("transform", matrix4f);

@@ -33,4 +33,8 @@ public class LayingTile {
   public void render() {
     texturedQuad.render();
   }
+
+  public void clean() {
+    texturedQuad.clean();
+  }
 }

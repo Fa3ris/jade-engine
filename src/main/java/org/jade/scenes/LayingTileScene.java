@@ -23,6 +23,7 @@ public class LayingTileScene extends AbstractScene {
 
   @Override
   public void unload() {
+    layingTile.clean();
     layingTile = null;
   }
 }
