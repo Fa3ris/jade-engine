@@ -52,5 +52,6 @@ public class CircularRotationTexturedQuadScene extends AbstractScene {
   @Override
   public void unload() {
     texturedQuad = null;
+    circularRotation = null;
   }
 }

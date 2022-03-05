@@ -47,6 +47,8 @@ public class TranslateThenRotateTexturedQuadScene extends AbstractScene {
 
   @Override
   public void unload() {
+
     texturedQuad = null;
+    translateThenRotate = null;
   }
 }
