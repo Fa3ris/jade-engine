@@ -50,13 +50,9 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
-import org.jade.render.Cube;
 import org.jade.render.camera.Camera;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -73,18 +69,26 @@ public class Window {
 
   public static boolean faulty = false;
 
-  private SceneManager configuredSceneManager;
+  private SceneManager sceneManager;
 
   private long windowHandle;
   private int w, h;
-  private String title;
+  private final String title;
 
+  /**
+   * in seconds
+   */
   private double prevTime = glfwGetTime();
-  private double accumulator = 0;
-
   private int currentFrame = 0;
 
-  private Camera camera = new Camera();
+  private final double step = 1 / 60d;
+  private double accumulator = 0;
+  private final double maxAccumulator = 10 * step;
+
+  private final Camera camera = new Camera();
+
+  private float fovInDegrees = 45f;
+  private final double mouseSensitivity = .1d;
 
   private Window() {
     w = 1920;
@@ -105,7 +109,6 @@ public class Window {
     loop();
 
     cleanup();
-
   }
 
 
@@ -115,9 +118,9 @@ public class Window {
     glfwSetErrorCallback(new ErrorCallback());
 
     // Initialize GLFW. Most GLFW functions will not work before doing this.
-    if ( !glfwInit() )
+    if ( !glfwInit() ) {
       throw new IllegalStateException("Unable to initialize GLFW");
-
+    }
 
     // Configure GLFW
     glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -173,8 +176,8 @@ public class Window {
 
     // Make the OpenGL the current context for the window
     glfwMakeContextCurrent(windowHandle);
-    // Enable v-sync
 
+    // Enable v-sync
     /*
     * The swap interval indicates how many frames to wait until swapping the buffers,
     * commonly known as vsync.
@@ -205,223 +208,35 @@ public class Window {
       GL30.glViewport(0, 0, w, h);
 
       // re-render during resizing
-      glClear(GL_COLOR_BUFFER_BIT); // clear the frame buffer
       render();
-      glfwSwapBuffers(windowHandle); // swap the color buffers
     });
 
-
-    float[] vertices = {
-        -.5f, -.5f, 0f, // left
-        0f, -.5f, 0f, // middle
-        -.25f, .5f, 0f, // top-left
-        .5f, -.5f, 0f, // right
-        .25f, .5f, 0f, // top-right
-    };
-
-    int[] indices = {
-        0, 1, 2,
-        1, 3, 4
-    };
-
-
-    int[] tri1Ind  = {
-        0, 1, 2,
-    };
-
-    int[] tri2Ind  = {
-        1, 3, 4
-    };
-
-    float coloredVertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
-    };
-
-
-
-    Vector4f vector4f = new Vector4f(1f, 0f, 0f, 1f);
-    // w is the homogeneous coordinate
-    logger.info("vector before transform {}", vector4f);
-
-    Matrix4f matrix4f = new Matrix4f().identity().translate(new Vector3f(1f, 1f, 0f));
-
-    vector4f = matrix4f.transform(vector4f);
-
-    logger.info("vector after transform {}", vector4f);
-
-
-
-
-
-    cube = new Cube();
-
-    cameraPosition = new Vector3f(0f, 0f, 3f);
-
-    worldOrigin = new Vector3f(0f, 0f, 0f);
-
-    // The name direction vector is not the best chosen name,
-    // since it is actually pointing in the reverse direction of what it is targeting.
-    cameraDirection = new Vector3f(cameraPosition).sub(worldOrigin).normalize();
-
-    pitch = roll = yaw = 0;
-
-    roll = 0;
-
-//    cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
-//    cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
-//    cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)));
-//    cameraDirection.normalize();
-
-    logger.info("camera pointing at {}", cameraDirection);
-
-    cameraFront = new Vector3f(0f, 0f, -1f); // look forward
-
-//    worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
-//    cameraRight = tempVec3.set(worldUp).cross(cameraDirection).normalize(); // n.b.: direction points from origin to the camera
-
-    // compose three rotations yaw then pitch then roll
-//    matriceDePassage.identity()
-//        .rotateY((float) Math.toRadians(yaw))
-//        .rotateX((float) Math.toRadians(pitch))
-//        .rotateZ((float) Math.toRadians(roll));
-//
-//    matriceDePassage.transformDirection(cameraFront, cameraDirection);
-
-    logger.info("camera front pointing at {}", cameraDirection);
-
-    worldUp = new Vector3f(0f, 1f, 0f); // up in the world space
-
-    cameraUp.set(worldUp);
-
-//    cameraRight = tempVec3.set(worldUp).cross(cameraDirection).normalize();
-
-//    cameraUp = tempVec3.set(cameraDirection).cross(cameraRight).normalize();
-//    logger.info("camera up is {}", cameraUp);
-
-//    new Matrix4f().rotate((float) Math.toRadians(roll), cameraDirection).transformDirection(cameraUp);
-
-//    cameraUp.normalize();
-//    logger.info("camera up after is {}", cameraUp);
-//    cameraUp.rotate((float) Math.toRadians(roll));
-
-//    lookAt = new Matrix4f().setLookAt(cameraPosition, cameraDirection, cameraUp);
-
-    lookAt = new Matrix4f();
-    updateLookAt();
-    if (false) {
-
-    cube.setView(lookAt);
-    }
-
-    cube.setView(camera.getLookAt());
-
-    configuredSceneManager = SceneManagerFactory.createInstance();
+    sceneManager = SceneManagerFactory.createInstance();
   }
-
-  private void updateLookAt() {
-
-//    cameraFront.set(cameraPosition).sub(cameraDirection).normalize();
-
-    logger.info("yaw = {}, pitch = {}, roll = {}", yaw, pitch, roll);
-    // camera direction
-    matriceDePassage.identity()
-        .rotateZ((float) Math.toRadians(roll))
-        .rotateY((float) Math.toRadians(yaw))
-        .rotateX((float) Math.toRadians(pitch));
-//        .rotateZ((float) Math.toRadians(roll));
-
-    matriceDePassage.transformDirection(cameraFront, cameraDirection);
-
-    cameraDirection.normalize();
-    logger.trace("camera direction = {}", cameraDirection);
-
-    cameraRight.set(cameraDirection).cross(worldUp).normalize();
-    logger.trace("camera right = {}", cameraRight);
-
-    cameraUp.set(cameraDirection).cross(cameraRight).normalize();
-
-    logger.trace("camera up = {}", cameraUp);
-
-    Matrix4f rotation = new Matrix4f().rotate((float) Math.toRadians(roll), cameraDirection);
-    rotation.transformDirection(cameraUp).normalize();
-//    cameraFront.set(cameraDirection).sub(cameraPosition);
-//    rotation.transformDirection(cameraFront).normalize();
-
-    logger.info("\npos = {}\ndirection = {}\nup= {}", cameraPosition, cameraDirection, cameraUp);
-    lookAt = lookAt.setLookAt(cameraPosition,
-        cameraTarget.set(cameraPosition).add(cameraDirection),
-        cameraUp);
-  }
-
-  private Vector3f worldOrigin;
-
-  private Vector3f worldUp;
-
-
-
-  private double yaw, pitch, roll;
-
-  private Vector3f cameraFront; // fixed direction - look forward
-
-  private final Matrix4f matriceDePassage = new Matrix4f();
-
-
-  private Cube cube;
-  private Vector3f[] cubePositions = {
-      new Vector3f( 0.0f,  0.0f,  0.0f),
-  new Vector3f( 2.0f,  5.0f, -15.0f),
-  new Vector3f(-1.5f, -2.2f, -2.5f),
-  new Vector3f(-3.8f, -2.0f, -12.3f),
-  new Vector3f( 2.4f, -0.4f, -3.5f),
-  new Vector3f(-1.7f,  3.0f, -7.5f),
-  new Vector3f( 1.3f, -2.0f, -2.5f),
-  new Vector3f( 1.5f,  2.0f, -2.5f),
-  new Vector3f( 1.5f,  0.2f, -1.5f),
-  new Vector3f(-1.3f,  1.0f, -1.5f)
-};
-
-  private Vector3f cameraPosition;
-  private Vector3f cameraDirection;
-  private final Vector3f cameraRight = new Vector3f();
-  private final Vector3f cameraUp = new Vector3f();
-  private Matrix4f lookAt;
-
-  private final Vector3f cameraTarget = new Vector3f();
-
-  float fov = 45f;
-
-  private final Vector3f tempVec3 = new Vector3f();
 
   private void loop() {
-    // Set the clear color
+    // Set the clear color to blue
     glClearColor(0f, 0f, 1f, .5f);
 
     while (!glfwWindowShouldClose(windowHandle)) {
       ++currentFrame;
       glfwPollEvents();
 
-      double newTime = glfwGetTime();
-      double elapsed = newTime - prevTime; // in seconds
+      final double newTime = glfwGetTime();
+      final double elapsed = newTime - prevTime; // in seconds
 
       if (elapsed > 0) {
         double fps = 1 / elapsed;
         logger.debug("fps: {}", fps);
       }
       accumulator += elapsed;
-
-      final double step = 1 / 60d;
-      final double maxAccumulator = 10 * step;
       accumulator = Math.min(accumulator, maxAccumulator);
 
       while (accumulator > step) {
+        accumulator -= step;
         logger.debug("update frame {} with step {} s", currentFrame, step);
 
-
-
-        configuredSceneManager.update(step);
+        sceneManager.update(step);
 
           /*
           * model matrix : local space -> world space
@@ -479,79 +294,57 @@ public class Window {
         * for the camera
         * given a pitch and yaw, find a corresponding direction to affect to cameraFront
         * */
-        accumulator -= step;
       }
 
-      /*
-      Définition générale :
+        /*
+        ECS
+        Définition générale :
 
         entité = un id uniquement
         composant = data
         système = algos
        */
 
-      prevTime = newTime;
-
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the frame buffer and depth buffer
-
       render();
-
-      glfwSwapBuffers(windowHandle); // swap the color buffers
 
       if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
         logger.info("space is pressed x: {}, y: {}", MouseListener.instance.x, MouseListener.instance.y);
       }
 
-
       boolean updateCamera = false;
-       float cameraSpeed = 2.5f * (float) step; // or can use elapsed = delta time
-
+      float cameraSpeed = (float) step; // or can use elapsed = delta time
 
       if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
         logger.info("w pressed at {}", cameraSpeed);
-        cameraPosition.add(tempVec3.set(cameraDirection).mul(cameraSpeed));
         camera.forward();
         updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
         logger.info("s pressed at {}", cameraSpeed);
-        cameraPosition.sub(tempVec3.set(cameraDirection).mul(cameraSpeed));
         camera.backward();
         updateCamera = true;
-
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
         logger.info("a pressed at {}", cameraSpeed);
-        cameraPosition.sub(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
         camera.strafeLeft();
         updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
         logger.info("d pressed at {}", cameraSpeed);
-        cameraPosition.add(tempVec3.set(cameraDirection).cross(cameraUp).mul(cameraSpeed));
         camera.strafeRight();
         updateCamera = true;
-
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_F)) { // roll left
-        logger.info("f pressed at {}", roll);
-        roll--;
         camera.roll(-1);
-//        cameraFront.set(cameraPosition).add(cameraDirection).normalize();
-//        pitch = yaw = 0;
         updateCamera = true;
       }
 
       if (KeyListener.isKeyPressed(GLFW_KEY_G)) { // roll right
-        logger.info("g pressed at {}", roll);
-        roll++;
         camera.roll(1);
-//        cameraFront.set(cameraPosition).add(cameraDirection).normalize();
-//        pitch = yaw = 0;
         updateCamera = true;
       }
 
@@ -563,80 +356,37 @@ public class Window {
         updateCamera = true;
       }
 
-
-      double sensitivity = .1d;
       if (MouseListener.instance.x != MouseListener.instance.prevX && MouseListener.instance.dragging) {
         double xOffset = MouseListener.instance.x - MouseListener.instance.prevX;
-        xOffset *= sensitivity;
+        xOffset *= mouseSensitivity;
 
-        yaw += xOffset;
         updateCamera = true;
-        logger.info("mouse x");
         camera.yaw(xOffset);
       }
 
       if (MouseListener.instance.y != MouseListener.instance.prevY && MouseListener.instance.dragging) {
         double yOffset = MouseListener.instance.y - MouseListener.instance.prevY;
-        yOffset *= sensitivity;
-        pitch += yOffset;
+        yOffset *= mouseSensitivity;
 
-        if (pitch > 89.0f)
-          pitch =  89.0f;
-        if (pitch < -89.0f)
-          pitch = -89.0f;
-
-        logger.info("mouse y");
         camera.pitch(yOffset);
         updateCamera = true;
       }
 
-
       if (updateCamera) {
-        updateLookAt();
-      if (false) {
-
-        cube.setView(lookAt);
-      }
-
-      logger.info("camera look at {}", camera.getLookAt());
-      cube.setView(camera.getLookAt());
-
-      configuredSceneManager.updateCamera(camera);
-
-//        cameraDirection.x = (float) (Math.cos(Math.toRadians(yaw)) * Math
-//            .cos(Math.toRadians(pitch)));
-//        cameraDirection.y = (float) (Math.sin(Math.toRadians(pitch)));
-//        cameraDirection.z = (float) (Math.sin(Math.toRadians(yaw)) * Math
-//            .cos(Math.toRadians(pitch)));
-//        cameraDirection.normalize();
-
-        // compose three rotations yaw then pitch then roll
-        // compose three rotations yaw then pitch then roll
-//        matriceDePassage.identity()
-//            .rotateY((float) Math.toRadians(yaw))
-//            .rotateX((float) Math.toRadians(pitch))
-//            .rotateZ((float) Math.toRadians(roll));
-//
-//        matriceDePassage.transformDirection(cameraFront, cameraDirection);
-//
-//        cameraDirection.normalize();
-//
-//        logger.info("rotate yaw = {} pitch = {} camera is now {}", yaw, pitch, cameraDirection);
+        logger.info("camera look at {}", camera.getLookAt());
+        sceneManager.updateCamera(camera);
       }
 
       if (MouseListener.instance.scrollY != 0) {
-          fov -= MouseListener.instance.scrollY;
-
-        if (fov < 1.0f)
-          fov = 1.0f;
-        if (fov > 45.0f)
-          fov = 45.0f;
-
-        cube.setFOV(fov);
-
-        configuredSceneManager.setFOV(fov);
+        fovInDegrees -= MouseListener.instance.scrollY;
+        if (fovInDegrees < 1.0f)
+          fovInDegrees = 1.0f;
+        if (fovInDegrees > 45.0f)
+          fovInDegrees = 45.0f;
+        sceneManager.setFOV(fovInDegrees);
       }
-      endFrame();
+
+      endFrame(newTime);
     }
 
   }
@@ -665,53 +415,21 @@ public class Window {
    * */
   private void render() {
     // use GL 3.0
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the frame buffer and depth buffer
 
-    configuredSceneManager.render();
+    sceneManager.render();
 
-    if (false) {
-    }
-    if (false) {
-    } else if (false) {
-    } else if (false) {
-      if (true) {
-      } else {
-      }
-    } else if (false){
-    } else if (false) {
-    } else if (false) {
+    glfwSwapBuffers(windowHandle); // swap the color buffers
 
-
-
-    } else if (false) {
-    } else if (false) {
-      if (false) {
-        // circle around Y-axis
-        float radius = 20f;
-        cameraPosition.x = (float) Math.sin(glfwGetTime()) * radius - 10;
-        cameraPosition.z = (float) Math.cos(glfwGetTime()) * radius;
-        lookAt.setLookAt(
-            cameraPosition,
-                cameraTarget.set(cameraPosition).add(cameraDirection),
-                cameraUp);
-      }
-
-//      updateLookAt();
-//      cube.setView(lookAt);
-      for (int i = 0; i < cubePositions.length; i++) {
-        cube.setTranslation(cubePositions[i]);
-        cube.setRotationOffset(20 * i);
-        cube.render();
-      }
-    }
   }
 
-  private void endFrame() {
+  private void endFrame(double newPrevTime) {
     MouseListener.endFrame();
+    prevTime = newPrevTime;
   }
 
   private void cleanup() {
     logger.debug("clean window");
-
 
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
@@ -725,5 +443,4 @@ public class Window {
       logger.error("cannot free error callback");
     }
   }
-
 }
