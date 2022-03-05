@@ -59,6 +59,7 @@ import org.jade.render.Triangles;
 import org.jade.render.UpdatingTriangles;
 import org.jade.render.camera.Camera;
 import org.jade.scenes.SceneManager;
+import org.jade.scenes.SceneManagerFactory;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -79,6 +80,8 @@ public class Window {
   public static boolean faulty = false;
 
   private SceneManager sceneManager;
+
+  private SceneManager configuredSceneManager;
 
   private long windowHandle;
   private int w, h;
@@ -359,6 +362,8 @@ public class Window {
     cube.setView(camera.getLookAt());
 
     sceneManager = new SceneManager();
+
+    configuredSceneManager = SceneManagerFactory.createInstance();
   }
 
   private void updateLookAt() {
@@ -723,7 +728,8 @@ public class Window {
   private void render() {
     // use GL 3.0
 
-    sceneManager.render();
+    configuredSceneManager.render();
+
     if (false) {
       gradientTriangle.render();
       singleTriangle.render();

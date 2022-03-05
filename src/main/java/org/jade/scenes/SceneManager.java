@@ -1,6 +1,8 @@
 package org.jade.scenes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SceneManager implements ChangeSceneCallback {
@@ -11,6 +13,25 @@ public class SceneManager implements ChangeSceneCallback {
 
   public SceneManager() {
     changeScene(SceneType.GRADIENT_TRIANGLE);
+  }
+
+  private final List<Scene> scenes = new ArrayList<>(20);
+
+  void addScene(Scene scene) {
+    scenes.add(scene);
+  }
+
+  void init() {
+    currentScene = scenes.get(0);
+    currentScene.load();
+  }
+
+  public void changeScene(Class<Scene> clazz) {
+    for (Scene scene : scenes) {
+      if (scene.getClass().isAssignableFrom(clazz)) {
+        break;
+      }
+    }
   }
 
   public void update(double dt) {
