@@ -764,7 +764,7 @@ public class Window {
     } else if (false) {
       layingTile.render();
       updatingTriangles.render();
-    } else {
+    } else if (false) {
       if (false) {
         // circle around Y-axis
         float radius = 20f;

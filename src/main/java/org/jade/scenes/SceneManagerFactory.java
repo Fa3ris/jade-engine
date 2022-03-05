@@ -5,6 +5,8 @@ import java.lang.reflect.Constructor;
 public abstract class SceneManagerFactory {
 
   private static final String[] sceneClassNames = {
+      "org.jade.scenes.TranslateThenRotateTexturedQuadScene",
+      "org.jade.scenes.ColoredTriangleScene",
       "org.jade.scenes.UpdatingTriangleScene",
       "org.jade.scenes.LinkedTriangleScene",
       "org.jade.scenes.YellowTriangleScene",
