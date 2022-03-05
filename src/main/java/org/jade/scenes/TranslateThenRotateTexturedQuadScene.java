@@ -21,7 +21,7 @@ public class TranslateThenRotateTexturedQuadScene extends AbstractScene {
 
     texturedQuad = new TexturedQuad();
 
-    Matrix4f translateThenRotate = new Matrix4f();
+    translateThenRotate = new Matrix4f();
 
     translateThenRotate.identity()
         .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
@@ -32,7 +32,6 @@ public class TranslateThenRotateTexturedQuadScene extends AbstractScene {
 
   @Override
   public void update(double dt) {
-    Matrix4f translateThenRotate = new Matrix4f();
 
     translateThenRotate.identity()
         .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
