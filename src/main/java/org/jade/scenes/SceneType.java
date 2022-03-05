@@ -4,4 +4,6 @@ public enum SceneType {
 
   BASIC,
   LEVEL,
+
+  GRADIENT_TRIANGLE,
 }

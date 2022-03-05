@@ -10,7 +10,7 @@ public class SceneManager implements ChangeSceneCallback {
   private final Map<SceneType, Scene> sceneMap = new HashMap<>();
 
   public SceneManager() {
-    changeScene(SceneType.BASIC);
+    changeScene(SceneType.GRADIENT_TRIANGLE);
   }
 
   public void update(double dt) {
@@ -42,7 +42,11 @@ public class SceneManager implements ChangeSceneCallback {
       case LEVEL:
         currentScene = new LevelScene();
         break;
+      case GRADIENT_TRIANGLE:
+        currentScene = new GradientTriangleScene();
+        break;
       default:
+        throw new IllegalArgumentException(String.format("unknown scene %s", scene));
     }
     currentScene.setChangeSceneCallback(this);
     sceneMap.put(scene, currentScene);

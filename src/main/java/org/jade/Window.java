@@ -723,6 +723,7 @@ public class Window {
   private void render() {
     // use GL 3.0
 
+    sceneManager.render();
     if (false) {
       gradientTriangle.render();
       singleTriangle.render();
