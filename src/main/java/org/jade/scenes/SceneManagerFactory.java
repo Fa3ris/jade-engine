@@ -5,6 +5,9 @@ import java.lang.reflect.Constructor;
 public abstract class SceneManagerFactory {
 
   public static String[] sceneClassNames = {
+      "org.jade.scenes.Triangle2Scene",
+      "org.jade.scenes.Triangle1Scene",
+      "org.jade.scenes.TwoTrianglesScene",
       "org.jade.scenes.SingleTriangleScene",
       "org.jade.scenes.GradientTriangleScene"
   };
