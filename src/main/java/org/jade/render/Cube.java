@@ -1,8 +1,6 @@
 package org.jade.render;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
-import static org.lwjgl.opengl.GL11.GL_RGB;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE1;
 
@@ -86,10 +84,10 @@ public class Cube {
 
     triangles.shader.setUniform1iv("texture2", 1);
 
-    wallTexture = new Texture("textures/wall.jpg", GL_RGB);
+    wallTexture = new Texture("textures/wall.jpg");
     wallTexture.load(false);
 
-    smileyTexture = new Texture("textures/awesomeface.png", GL_RGBA);
+    smileyTexture = new Texture("textures/awesomeface.png");
     smileyTexture.load(true);
 
     Vector3f moveSceneForward = new Vector3f(0f, 0f, -3f);

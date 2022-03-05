@@ -2,6 +2,8 @@ package org.jade.render.texture;
 
 import static org.lwjgl.opengl.GL11.GL_LINEAR;
 import static org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_RGB;
+import static org.lwjgl.opengl.GL11.GL_RGBA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
@@ -47,11 +49,8 @@ public class Texture {
 
   final private String path;
 
-  final private int format;
-
-  public Texture(String path, int format) {
+  public Texture(String path) {
     this.path = path;
-    this.format = format;
     id = glGenTextures();
   }
 
@@ -90,13 +89,21 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       }
 
+      int glFormat = 0;
+      if (this.components == 3) {
+        glFormat = GL_RGB;
+      } else if (this.components == 4) {
+        glFormat = GL_RGBA;
+      } else {
+        logger.error("unknown number of components {}", this.components);
+      }
       glTexImage2D(GL_TEXTURE_2D,
           0,
-          format,
+          glFormat,
           width.get(),
           height.get(),
           0,
-          format,
+          glFormat,
           GL_UNSIGNED_BYTE,
           data);
       glGenerateMipmap(GL_TEXTURE_2D);
