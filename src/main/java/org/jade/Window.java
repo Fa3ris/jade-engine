@@ -53,8 +53,6 @@ import java.util.Objects;
 import org.jade.render.Cube;
 import org.jade.render.LayingTile;
 import org.jade.render.TexturedQuad;
-import org.jade.render.Triangles;
-import org.jade.render.UpdatingTriangles;
 import org.jade.render.camera.Camera;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
@@ -237,16 +235,6 @@ public class Window {
         1, 3, 4
     };
 
-
-
-    linkedTriangle = new Triangles(vertices, tri2Ind,
-        "shaders/link/vertexShader.glsl",
-        "shaders/link/fragmentShader.glsl");
-
-    updatingTriangles = new UpdatingTriangles(vertices, tri1Ind,
-        "shaders/uniform/vertexShader.glsl",
-        "shaders/uniform/fragmentShader.glsl");
-
     float coloredVertices[] = {
         // positions         // colors
         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
@@ -254,12 +242,6 @@ public class Window {
         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
     };
 
-    coloredTriangle = new Triangles(coloredVertices, tri1Ind,
-        "shaders/color/vertexShader.glsl",
-        "shaders/color/fragmentShader.glsl");
-
-    coloredTriangle.configVertexAttribute(0, 3, 6*Float.BYTES, 0);
-    coloredTriangle.configVertexAttribute(1, 3, 6*Float.BYTES, 3*Float.BYTES);
 
     texturedQuad = new TexturedQuad();
 
@@ -282,7 +264,6 @@ public class Window {
 
     circularRotation = new Matrix4f();
 
-    layingTile = new LayingTile();
 
     cube = new Cube();
 
@@ -389,10 +370,6 @@ public class Window {
   private Vector3f worldUp;
 
 
-  private Triangles linkedTriangle;
-  private UpdatingTriangles updatingTriangles;
-  private Triangles coloredTriangle;
-
   private TexturedQuad texturedQuad;
 
   private Matrix4f translateThenRotate;
@@ -405,7 +382,6 @@ public class Window {
 
   private final Matrix4f matriceDePassage = new Matrix4f();
 
-  private LayingTile layingTile;
 
   private Cube cube;
   private Vector3f[] cubePositions = {
@@ -456,7 +432,6 @@ public class Window {
 
       while (accumulator > step) {
         logger.debug("update frame {} with step {} s", currentFrame, step);
-        updatingTriangles.update(step);
 
         translateThenRotate.identity()
             .rotate((float) glfwGetTime(), new Vector3f(0f, 0f, 1f))
@@ -719,15 +694,12 @@ public class Window {
     }
     if (false) {
     } else if (false) {
-      linkedTriangle.render();
     } else if (false) {
       if (true) {
       } else {
       }
     } else if (false){
-      updatingTriangles.render();
     } else if (false) {
-      coloredTriangle.render();
     } else if (false) {
 
       texturedQuad.applyTransform(translateThenRotate);
@@ -739,8 +711,6 @@ public class Window {
       texturedQuad.applyTransform(scaleThenRotate);
       texturedQuad.render();
     } else if (false) {
-      layingTile.render();
-      updatingTriangles.render();
     } else if (false) {
       if (false) {
         // circle around Y-axis

@@ -39,6 +39,7 @@ public class LinkedTriangleScene extends AbstractScene {
 
   @Override
   public void unload() {
+    linkedTriangle.clean();
     linkedTriangle = null;
   }
 }

@@ -43,6 +43,7 @@ public class UpdatingTriangleScene extends AbstractScene {
 
   @Override
   public void unload() {
+    updatingTriangles.clean();
     updatingTriangles = null;
   }
 }

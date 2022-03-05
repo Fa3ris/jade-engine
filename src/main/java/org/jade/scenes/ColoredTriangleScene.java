@@ -47,6 +47,7 @@ public class ColoredTriangleScene extends AbstractScene {
 
   @Override
   public void unload() {
+    coloredTriangle.clean();
     coloredTriangle = null;
   }
 }
