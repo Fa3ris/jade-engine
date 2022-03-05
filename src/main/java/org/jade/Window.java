@@ -116,7 +116,6 @@ public class Window {
 
   }
 
-  private GradientTriangle gradientTriangle;
   private SingleTriangle singleTriangle;
 
   private void init() {
@@ -220,7 +219,6 @@ public class Window {
       glfwSwapBuffers(windowHandle); // swap the color buffers
     });
 
-    gradientTriangle = new GradientTriangle();
     singleTriangle = new SingleTriangle();
 
     float[] vertices = {
@@ -738,7 +736,6 @@ public class Window {
     configuredSceneManager.render();
 
     if (false) {
-      gradientTriangle.render();
       singleTriangle.render();
     }
     if (false) {
@@ -798,7 +795,6 @@ public class Window {
   private void cleanup() {
     logger.debug("clean window");
 
-    gradientTriangle.clean();
     singleTriangle.clean();
     twoTriangles.clean();
 

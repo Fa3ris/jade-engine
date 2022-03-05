@@ -23,6 +23,7 @@ public class GradientTriangleScene extends AbstractScene {
 
   @Override
   public void unload() {
+    gradientTriangle.clean();
     gradientTriangle = null;
   }
 }
