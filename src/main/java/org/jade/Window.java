@@ -489,6 +489,8 @@ public class Window {
                 .5f * (float) Math.sin(glfwGetTime()),
                 0f));
 
+        configuredSceneManager.update(step);
+
           /*
           * model matrix : local space -> world space
           * view matrix : world space -> view/camera space

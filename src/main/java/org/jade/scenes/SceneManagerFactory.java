@@ -4,7 +4,8 @@ import java.lang.reflect.Constructor;
 
 public abstract class SceneManagerFactory {
 
-  public static String[] sceneClassNames = {
+  private static final String[] sceneClassNames = {
+      "org.jade.scenes.UpdatingTriangleScene",
       "org.jade.scenes.LinkedTriangleScene",
       "org.jade.scenes.YellowTriangleScene",
       "org.jade.scenes.Triangle2Scene",
