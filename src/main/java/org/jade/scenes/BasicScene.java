@@ -17,7 +17,7 @@ public class BasicScene extends AbstractScene {
 
     if (KeyListener.isKeyPressed(GLFW_KEY_L)) {
       logger.info("transition to level scene");
-      changeSceneCallback.changeScene(SceneType.LEVEL);
+//      changeSceneCallback.changeScene(SceneType.LEVEL);
     }
 
   }

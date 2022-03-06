@@ -1,22 +1,25 @@
 package org.jade.scenes;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import org.jade.KeyListener;
 import org.jade.render.camera.Camera;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SceneManager implements ChangeSceneCallback {
 
+  private static final Logger logger = LoggerFactory.getLogger(SceneManager.class);
+
   private Scene currentScene;
 
-  private final Map<SceneType, Scene> sceneMap = new HashMap<>();
-
-  public SceneManager() {
-    changeScene(SceneType.GRADIENT_TRIANGLE);
-  }
-
+  private int currentSceneIndex;
   private final List<Scene> scenes = new ArrayList<>(20);
+
+  public SceneManager() {}
 
   void addScene(Scene scene) {
     scenes.add(scene);
@@ -35,8 +38,65 @@ public class SceneManager implements ChangeSceneCallback {
     }
   }
 
+  public void nextScene() {
+    int i = scenes.indexOf(currentScene);
+    ++i;
+    if (i == scenes.size()) {
+      i = 0;
+    }
+    currentScene.unload();
+    currentScene = scenes.get(i);
+    currentScene.load();
+  }
+
+  boolean rightDown;
+  boolean oldRightDown;
+  boolean rightTransitioned;
+  boolean oldRightTransitioned;
+  private int rightCount;
+
+  boolean leftDown;
+  boolean oldLeftDown;
+  boolean leftTransitioned;
+  boolean oldLeftTransitioned;
+  private int leftCount;
+
   public void update(double dt) {
+
+    oldRightDown = rightDown;
+    oldRightTransitioned = rightTransitioned;
+
+    rightDown = KeyListener.isKeyPressed(GLFW_KEY_RIGHT);
+    rightTransitioned = rightDown != oldRightDown;
+
+    oldLeftDown = leftDown;
+    oldLeftTransitioned = leftTransitioned;
+
+    leftDown = KeyListener.isKeyPressed(GLFW_KEY_LEFT);
+    leftTransitioned = leftDown != oldLeftDown;
+
+    if (rightDown && rightTransitioned) {
+      logger.info("right pressed {}", ++rightCount);
+      nextScene();
+    } else if (leftDown && leftTransitioned) {
+      logger.info("left pressed {}", ++leftCount);
+      previousScene();
+    }
+
     currentScene.update(dt);
+
+
+  }
+
+  private void previousScene() {
+    int i = scenes.indexOf(currentScene);
+    --i;
+    if (i < 0) {
+      i = scenes.size() - 1;
+    }
+    currentScene.unload();
+    currentScene = scenes.get(i);
+    currentScene.load();
   }
 
   public void render() {
@@ -55,7 +115,7 @@ public class SceneManager implements ChangeSceneCallback {
     if (currentScene != null) {
       currentScene.unload();
     }
-    currentScene = sceneMap.get(scene);
+//    currentScene = sceneMap.get(scene);
     if (currentScene == null) {
       createScene(scene);
     }
@@ -79,6 +139,6 @@ public class SceneManager implements ChangeSceneCallback {
         throw new IllegalArgumentException(String.format("unknown scene %s", scene));
     }
     currentScene.setChangeSceneCallback(this);
-    sceneMap.put(scene, currentScene);
+//    sceneMap.put(scene, currentScene);
   }
 }
