@@ -50,9 +50,15 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
+import org.jade.render.ColoredVertex;
+import org.jade.render.ColoredQuadRenderer;
+import org.jade.render.ColoredQuadRenderer.ColoredQuad;
 import org.jade.render.camera.Camera;
+import org.jade.render.shader.Shader;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -111,8 +117,42 @@ public class Window {
     cleanup();
   }
 
+  private ColoredQuadRenderer renderer;
+
+  private Shader shader;
 
   private void init() {
+    ColoredVertex[] vertices = new ColoredVertex[4];
+
+    vertices[0] = new ColoredVertex(new float[] {0.5f,  0.5f, 0.0f}, new float[] {1.0f, 0.0f, 0.0f, 1});
+    vertices[1] = new ColoredVertex(new float[] {0.5f, -0.5f, 0.0f}, new float[] {0.0f, 1.0f, 0.0f, 1f});
+    vertices[2] = new ColoredVertex(new float[] {-0.5f, -0.5f, 0.0f}, new float[] {0.0f, 0.0f, 1.0f, 1f});
+    vertices[3] = new ColoredVertex(new float[] {-0.5f,  0.5f, 0.0f}, new float[] {1.0f, 1.0f, 0.0f, 1f});
+
+    ColoredQuad quad = new ColoredQuad(vertices);
+
+    renderer = new ColoredQuadRenderer();
+
+    renderer.addQuad(quad);
+
+    // translate right
+    vertices[0].getPosition()[0] += .5f;
+    vertices[1].getPosition()[0] += .5f;
+    vertices[2].getPosition()[0] += .5f;
+    vertices[3].getPosition()[0] += .5f;
+
+    quad = new ColoredQuad(vertices);
+    renderer.addQuad(quad);
+
+    // translate up
+    vertices[0].getPosition()[1] += .5f;
+    vertices[1].getPosition()[1] += .5f;
+    vertices[2].getPosition()[1] += .5f;
+    vertices[3].getPosition()[1] += .5f;
+
+    quad = new ColoredQuad(vertices);
+    renderer.addQuad(quad);
+    renderer.addQuad(quad);
 
     // Setup an error callback.
     glfwSetErrorCallback(new ErrorCallback());
@@ -212,6 +252,11 @@ public class Window {
     });
 
     sceneManager = SceneManagerFactory.createInstance();
+
+    renderer.load();
+
+    shader = new Shader("shaders/colored-renderer/vertexShader.glsl",
+        "shaders/colored-renderer/fragmentShader.glsl");
   }
 
   private void loop() {
@@ -419,6 +464,8 @@ public class Window {
 
     sceneManager.render();
 
+    shader.use();
+    renderer.render();
     glfwSwapBuffers(windowHandle); // swap the color buffers
 
   }
