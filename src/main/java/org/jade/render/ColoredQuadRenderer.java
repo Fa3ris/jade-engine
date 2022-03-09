@@ -71,6 +71,14 @@ public class ColoredQuadRenderer {
   public void render() {
     logger.info("rendering {}", quadCount);
     glBindVertexArray(vaoID);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      FloatBuffer positionsBuffer = stackMallocFloat(vertices.length);
+      positionsBuffer.put(vertices).flip();
+      glBufferSubData(GL_ARRAY_BUFFER, 0, positionsBuffer);
+    }
+
     glDrawElements(
         GL_TRIANGLES,
         quadCount * indices_Per_Quad, // number of vertices
@@ -101,11 +109,11 @@ public class ColoredQuadRenderer {
     vboID = glGenBuffers();
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      FloatBuffer positionsBuffer = stackMallocFloat(vertices.length);
-      positionsBuffer.put(vertices).flip();
-      glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
-    }
+    glBufferData(GL_ARRAY_BUFFER,
+        (long) vertices.length * Float.BYTES,
+        GL_DYNAMIC_DRAW);
+      // DYNAMIC
+      // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
 
     glVertexAttribPointer(
         0,
