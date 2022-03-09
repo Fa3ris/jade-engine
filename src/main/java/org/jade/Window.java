@@ -120,8 +120,6 @@ public class Window {
 
   private ColoredQuadRenderer renderer;
 
-  private Shader shader;
-
   private void afterInit() {
     ColoredVertex[] vertices = new ColoredVertex[4];
 
@@ -154,14 +152,17 @@ public class Window {
     quad = new ColoredQuad(vertices);
     renderer.addQuad(quad);
 
-    for (int i = 0; i < 9_99; i++) {
+    for (int i = 0; i < 9_999; i++) {
       renderer.addQuad(quad);
     }
 
+    Shader shader = new Shader("shaders/colored-renderer/vertexShader.glsl",
+        "shaders/colored-renderer/fragmentShader.glsl");
+
+    renderer.setShader(shader);
+
     sceneManager = SceneManagerFactory.createInstance();
 
-    shader = new Shader("shaders/colored-renderer/vertexShader.glsl",
-        "shaders/colored-renderer/fragmentShader.glsl");
   }
 
   private void init() {
@@ -277,7 +278,7 @@ public class Window {
 
       if (elapsed > 0) {
         double fps = 1 / elapsed;
-        logger.debug("fps: {}", fps);
+        logger.info("fps: {}", fps);
       }
       accumulator += elapsed;
       accumulator = Math.min(accumulator, maxAccumulator);
@@ -469,7 +470,6 @@ public class Window {
 
     sceneManager.render();
 
-    shader.use();
     renderer.render();
     glfwSwapBuffers(windowHandle); // swap the color buffers
 

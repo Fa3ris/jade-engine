@@ -7,10 +7,8 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import org.lwjgl.BufferUtils;
+import org.jade.render.shader.Shader;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,43 +21,18 @@ public class ColoredQuadRenderer {
   private static final int COLOR_SIZE = 4;
   private static final int VERTEX_TOTAL_SIZE = POSITION_SIZE + COLOR_SIZE;
 
-  private static final int MAX_QUADS = 10_000;
+  private static final int MAX_QUADS = 500;
   private static final int VERTICES_PER_QUAD = 4;
   private static final int INDICES_PER_QUAD = 6;
-  @Deprecated
-  private final float[] vertices = new float[MAX_QUADS * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE];
-  private final int[] indices = new int[MAX_QUADS * INDICES_PER_QUAD];
 
   private int quadCount;
   private int vaoID, vboID, eboID;
 
+  private Shader shader;
+
+  public void setShader(Shader shader) { this.shader = shader; }
+
   public ColoredQuadRenderer() {
-
-    // 0 1 3 - 1 2 3
-
-    // add offset of 4 vertices for the indices
-
-    // 4 5 7 - 5 6 7
-    // 8 9 11  9 10 11
-
-    /* generate elements indices
-    * assume it will always be different quads
-    */
-    for (int i = 0; i < MAX_QUADS; ++i) {
-      int indexOffset = i * INDICES_PER_QUAD;
-      int valueOffset = i * VERTICES_PER_QUAD;
-
-      // triangle 1
-      indices[indexOffset + 0] = valueOffset + 0;
-      indices[indexOffset + 1] = valueOffset + 1;
-      indices[indexOffset + 2] = valueOffset + 3;
-
-      // triangle 2
-      indices[indexOffset + 3] = valueOffset + 1;
-      indices[indexOffset + 4] = valueOffset + 2;
-      indices[indexOffset + 5] = valueOffset + 3;
-    }
-
     load();
     logger.info("colored vertex renderer = {}", this);
   }
@@ -67,14 +40,15 @@ public class ColoredQuadRenderer {
   @Override
   public String toString() {
     return "ColoredVertexRenderer{" +
-//        "vertices=" + Arrays.toString(vertices) +
-        ", indices=" + Arrays.toString(indices) +
-        ", quadCount=" + quadCount +
+        "quadCount=" + quadCount +
         '}';
   }
 
   public void render() {
-//    logger.info("rendering {}", quadCount);
+
+    if (shader != null) {
+      shader.use();
+    }
     glBindVertexArray(vaoID);
 
     glDrawElements(
@@ -89,10 +63,6 @@ public class ColoredQuadRenderer {
       logger.error("no room left");
       return;
     }
-//    logger.info("add quad {}", quadCount + 1);
-//    System.arraycopy(quad.vertices, 0,
-//        vertices, quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE,
-//        VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
 
     // update sub-region of the buffer
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
@@ -104,12 +74,36 @@ public class ColoredQuadRenderer {
           vertexBuffer);
     }
 
+    // clock-wise
+    // 0 1 3 - 1 2 3
+
+    // add offset of 4 vertices for the indices
+
+    // 4 5 7 - 5 6 7
+    // 8 9 11  9 10 11
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      int valueOffset = quadCount * VERTICES_PER_QUAD;
+      int[] indices = new int[6];
+      // triangle 1
+      indices[0] = valueOffset + 0;
+      indices[1] = valueOffset + 1;
+      indices[2] = valueOffset + 3;
+
+      // triangle 2
+      indices[3] = valueOffset + 1;
+      indices[4] = valueOffset + 2;
+      indices[5] = valueOffset + 3;
+      IntBuffer indicesBuffer = stackMallocInt(indices.length);
+      indicesBuffer.put(indices).flip();
+      glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (long) quadCount * INDICES_PER_QUAD * Float.BYTES, indicesBuffer);
+    }
+
     ++quadCount;
     if (quadCount < 10)
     logger.info("render is now {}", this);
   }
-
-
 
   private void load() {
     vaoID = glGenVertexArrays();
@@ -143,30 +137,16 @@ public class ColoredQuadRenderer {
         POSITION_SIZE * Float.BYTES);
     glEnableVertexAttribArray(1);
 
+
     eboID = glGenBuffers();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-
-    // TODO load indices lazily
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      IntBuffer indicesBuffer;
-      if (indices.length < 100) {
-        indicesBuffer = stackMallocInt(indices.length);
-      } else {
-        indicesBuffer = BufferUtils.createIntBuffer(indices.length);
-      }
-      indicesBuffer.put(indices).flip();
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-    }
+    // allocate buffer space but do not load
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
 
     logger.info("after loading {} {} {}", vaoID, vboID, eboID);
   }
 
   public static class ColoredQuad {
-
-    @Deprecated
-    private final float[] positions = new float[POSITION_SIZE * 4]; // xyz
-    @Deprecated
-    private final float[] colors = new float[COLOR_SIZE * 4]; // rgba
 
     private final float[] vertices = new float[VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE];
 
@@ -192,31 +172,11 @@ public class ColoredQuadRenderer {
       if (vertices.length != VERTICES_PER_QUAD) throw new IllegalArgumentException("need 4 vertices");
 
       for (int i = 0; i < VERTICES_PER_QUAD; ++i) {
-//          System.arraycopy(vertices[i].getPosition(), 0, positions, i * POSITION_SIZE, POSITION_SIZE);
-//          System.arraycopy(vertices[i].getColor(), 0, colors, i * COLOR_SIZE, COLOR_SIZE);
-
           System.arraycopy(vertices[i].getPosition(), 0, this.vertices, i * VERTEX_TOTAL_SIZE, POSITION_SIZE);
-
           System.arraycopy(vertices[i].getColor(), 0, this.vertices, POSITION_SIZE + i * VERTEX_TOTAL_SIZE, COLOR_SIZE);
       }
 
       logger.info("colored Quad = {}", this);
-
-      // 0 1 3 - 1 2 3
-
-      // add offset of 4 vertices for the indices
-
-      // 4 5 7 - 5 6 7
     }
-
-    /*
-        *  0 --------  * 1      4          5
-        |    /         |
-        |  /            |
-        *  3---------- * 2      7           6
-     */
-
-    // 3, 2, 0, 0, 2, 1        7, 6, 4, 4, 6, 5
   }
-
 }
