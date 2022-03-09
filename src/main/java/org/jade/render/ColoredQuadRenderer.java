@@ -10,27 +10,28 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ColoredQuadRenderer {
 
+  private static final Logger logger = LoggerFactory.getLogger(ColoredQuadRenderer.class);
+
   private static final int POSITION_SIZE = 3;
   private static final int COLOR_SIZE = 4;
   private static final int VERTEX_TOTAL_SIZE = POSITION_SIZE + COLOR_SIZE;
 
-  private static final Logger logger = LoggerFactory.getLogger(ColoredQuadRenderer.class);
-
-  private List<ColoredVertex> coloredVertices = new ArrayList<>();
-
-  private static final int maxQuad = 3;
+  private static final int MAX_QUADS = 10_000;
   private static final int VERTICES_PER_QUAD = 4;
-  private static final int indices_Per_Quad = 6;
-  private final float[] vertices = new float[maxQuad * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE];
-  private final int[] indices = new int[maxQuad * indices_Per_Quad];
+  private static final int INDICES_PER_QUAD = 6;
+  @Deprecated
+  private final float[] vertices = new float[MAX_QUADS * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE];
+  private final int[] indices = new int[MAX_QUADS * INDICES_PER_QUAD];
 
-  private int quadCount = 0;
+  private int quadCount;
+  private int vaoID, vboID, eboID;
 
   public ColoredQuadRenderer() {
 
@@ -41,8 +42,11 @@ public class ColoredQuadRenderer {
     // 4 5 7 - 5 6 7
     // 8 9 11  9 10 11
 
-    for (int i = 0; i < maxQuad; ++i) {
-      int indexOffset = i * indices_Per_Quad;
+    /* generate elements indices
+    * assume it will always be different quads
+    */
+    for (int i = 0; i < MAX_QUADS; ++i) {
+      int indexOffset = i * INDICES_PER_QUAD;
       int valueOffset = i * VERTICES_PER_QUAD;
 
       // triangle 1
@@ -56,64 +60,70 @@ public class ColoredQuadRenderer {
       indices[indexOffset + 5] = valueOffset + 3;
     }
 
+    load();
     logger.info("colored vertex renderer = {}", this);
   }
 
   @Override
   public String toString() {
     return "ColoredVertexRenderer{" +
-        "vertices=" + Arrays.toString(vertices) +
+//        "vertices=" + Arrays.toString(vertices) +
         ", indices=" + Arrays.toString(indices) +
         ", quadCount=" + quadCount +
         '}';
   }
 
   public void render() {
-    logger.info("rendering {}", quadCount);
+//    logger.info("rendering {}", quadCount);
     glBindVertexArray(vaoID);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      FloatBuffer positionsBuffer = stackMallocFloat(vertices.length);
-      positionsBuffer.put(vertices).flip();
-      glBufferSubData(GL_ARRAY_BUFFER, 0, positionsBuffer);
-    }
 
     glDrawElements(
         GL_TRIANGLES,
-        quadCount * indices_Per_Quad, // number of vertices
+        quadCount * INDICES_PER_QUAD, // number of vertices
         GL_UNSIGNED_INT, // type of index values
         0); // where to start if index buffer object is bound
   }
 
   public void addQuad(ColoredQuad quad) {
-    if (quadCount >= maxQuad) {
+    if (quadCount >= MAX_QUADS) {
       logger.error("no room left");
       return;
     }
-    logger.info("add quad {}", quadCount + 1);
-    System.arraycopy(quad.vertices, 0,
-        vertices, quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE,
-        VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+//    logger.info("add quad {}", quadCount + 1);
+//    System.arraycopy(quad.vertices, 0,
+//        vertices, quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE,
+//        VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+
+    // update sub-region of the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+      vertexBuffer.put(quad.vertices).flip();
+      glBufferSubData(GL_ARRAY_BUFFER,
+          (long) quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+          vertexBuffer);
+    }
+
     ++quadCount;
+    if (quadCount < 10)
     logger.info("render is now {}", this);
   }
 
-  private int vaoID, vboID, eboID;
 
 
-  public void load() {
+  private void load() {
     vaoID = glGenVertexArrays();
     glBindVertexArray(vaoID);
 
     vboID = glGenBuffers();
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
+    // allocate buffer space but do not load
+    // DYNAMIC
+    // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
     glBufferData(GL_ARRAY_BUFFER,
-        (long) vertices.length * Float.BYTES,
+        (long) MAX_QUADS * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
         GL_DYNAMIC_DRAW);
-      // DYNAMIC
-      // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
 
     glVertexAttribPointer(
         0,
@@ -136,8 +146,14 @@ public class ColoredQuadRenderer {
     eboID = glGenBuffers();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
 
+    // TODO load indices lazily
     try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      IntBuffer indicesBuffer = stackMallocInt(indices.length);
+      IntBuffer indicesBuffer;
+      if (indices.length < 100) {
+        indicesBuffer = stackMallocInt(indices.length);
+      } else {
+        indicesBuffer = BufferUtils.createIntBuffer(indices.length);
+      }
       indicesBuffer.put(indices).flip();
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
     }
@@ -152,7 +168,7 @@ public class ColoredQuadRenderer {
     @Deprecated
     private final float[] colors = new float[COLOR_SIZE * 4]; // rgba
 
-    private final float[] vertices = new float[VERTICES_PER_QUAD * (POSITION_SIZE + COLOR_SIZE)];
+    private final float[] vertices = new float[VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE];
 
     // 0 1 3 - 1 2 3
 
@@ -176,12 +192,12 @@ public class ColoredQuadRenderer {
       if (vertices.length != VERTICES_PER_QUAD) throw new IllegalArgumentException("need 4 vertices");
 
       for (int i = 0; i < VERTICES_PER_QUAD; ++i) {
-          System.arraycopy(vertices[i].getPosition(), 0, positions, i * POSITION_SIZE, POSITION_SIZE);
-          System.arraycopy(vertices[i].getColor(), 0, colors, i * COLOR_SIZE, COLOR_SIZE);
+//          System.arraycopy(vertices[i].getPosition(), 0, positions, i * POSITION_SIZE, POSITION_SIZE);
+//          System.arraycopy(vertices[i].getColor(), 0, colors, i * COLOR_SIZE, COLOR_SIZE);
 
-          System.arraycopy(vertices[i].getPosition(), 0, this.vertices, i * (POSITION_SIZE + COLOR_SIZE), POSITION_SIZE);
+          System.arraycopy(vertices[i].getPosition(), 0, this.vertices, i * VERTEX_TOTAL_SIZE, POSITION_SIZE);
 
-          System.arraycopy(vertices[i].getColor(), 0, this.vertices, POSITION_SIZE + i * (COLOR_SIZE + POSITION_SIZE), COLOR_SIZE);
+          System.arraycopy(vertices[i].getColor(), 0, this.vertices, POSITION_SIZE + i * VERTEX_TOTAL_SIZE, COLOR_SIZE);
       }
 
       logger.info("colored Quad = {}", this);

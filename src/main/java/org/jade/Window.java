@@ -112,6 +112,7 @@ public class Window {
     logger.debug("start time {} s", prevTime);
 
     init();
+    afterInit();
     loop();
 
     cleanup();
@@ -121,7 +122,7 @@ public class Window {
 
   private Shader shader;
 
-  private void init() {
+  private void afterInit() {
     ColoredVertex[] vertices = new ColoredVertex[4];
 
     vertices[0] = new ColoredVertex(new float[] {0.5f,  0.5f, 0.0f}, new float[] {1.0f, 0.0f, 0.0f, 1});
@@ -152,7 +153,18 @@ public class Window {
 
     quad = new ColoredQuad(vertices);
     renderer.addQuad(quad);
-    renderer.addQuad(quad);
+
+    for (int i = 0; i < 9_99; i++) {
+      renderer.addQuad(quad);
+    }
+
+    sceneManager = SceneManagerFactory.createInstance();
+
+    shader = new Shader("shaders/colored-renderer/vertexShader.glsl",
+        "shaders/colored-renderer/fragmentShader.glsl");
+  }
+
+  private void init() {
 
     // Setup an error callback.
     glfwSetErrorCallback(new ErrorCallback());
@@ -250,13 +262,6 @@ public class Window {
       // re-render during resizing
       render();
     });
-
-    sceneManager = SceneManagerFactory.createInstance();
-
-    renderer.load();
-
-    shader = new Shader("shaders/colored-renderer/vertexShader.glsl",
-        "shaders/colored-renderer/fragmentShader.glsl");
   }
 
   private void loop() {
