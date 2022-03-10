@@ -50,15 +50,13 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
-import org.jade.render.ColoredVertex;
+import org.jade.render.ColoredQuadRenderer.ColoredVertex;
 import org.jade.render.ColoredQuadRenderer;
 import org.jade.render.ColoredQuadRenderer.ColoredQuad;
 import org.jade.render.camera.Camera;
 import org.jade.render.shader.Shader;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;

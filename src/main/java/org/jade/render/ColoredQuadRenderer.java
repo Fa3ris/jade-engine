@@ -7,7 +7,9 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.jade.render.shader.Shader;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -28,13 +30,16 @@ public class ColoredQuadRenderer {
   private int quadCount;
   private int vaoID, vboID, eboID;
 
+  private int totalQuads;
+  private final List<ColoredQuadRenderBatch> batches = new ArrayList<>();
+
   private Shader shader;
 
   public void setShader(Shader shader) { this.shader = shader; }
 
   public ColoredQuadRenderer() {
-    load();
-    logger.info("colored vertex renderer = {}", this);
+//    load();
+//    logger.info("colored vertex renderer = {}", this);
   }
 
   @Override
@@ -46,63 +51,91 @@ public class ColoredQuadRenderer {
 
   public void render() {
 
+    logger.info("rendering {} quads", totalQuads);
     if (shader != null) {
       shader.use();
     }
-    glBindVertexArray(vaoID);
 
-    glDrawElements(
-        GL_TRIANGLES,
-        quadCount * INDICES_PER_QUAD, // number of vertices
-        GL_UNSIGNED_INT, // type of index values
-        0); // where to start if index buffer object is bound
+    for (ColoredQuadRenderBatch batch : batches) {
+      batch.render();
+    }
+
+    if (false) {
+      glBindVertexArray(vaoID);
+
+      glDrawElements(
+          GL_TRIANGLES,
+          quadCount * INDICES_PER_QUAD, // number of vertices
+          GL_UNSIGNED_INT, // type of index values
+          0); // where to start if index buffer object is bound
+    }
   }
 
   public void addQuad(ColoredQuad quad) {
-    if (quadCount >= MAX_QUADS) {
-      logger.error("no room left");
-      return;
+
+    ++totalQuads;
+    for (ColoredQuadRenderBatch batch : batches) {
+      if (batch.addQuad(quad)) {
+        return;
+      }
     }
 
-    // update sub-region of the buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
-      vertexBuffer.put(quad.vertices).flip();
-      glBufferSubData(GL_ARRAY_BUFFER,
-          (long) quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
-          vertexBuffer);
+    ColoredQuadRenderBatch batch = new ColoredQuadRenderBatch();
+    batches.add(batch);
+    batch.addQuad(quad);
+
+    logger.info("batches size {}", batches.size());
+    if (true) { return; }
+
+    if (false) {
+
+      if (quadCount >= MAX_QUADS) {
+        logger.error("no room left");
+        return;
+      }
+
+      // update sub-region of the buffer
+      glBindBuffer(GL_ARRAY_BUFFER, vboID);
+      try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+        FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+        vertexBuffer.put(quad.vertices).flip();
+        glBufferSubData(GL_ARRAY_BUFFER,
+            (long) quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+            vertexBuffer);
+      }
+
+      // clock-wise
+      // 0 1 3 - 1 2 3
+
+      // add offset of 4 vertices for the indices
+
+      // 4 5 7 - 5 6 7
+      // 8 9 11  9 10 11
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+      try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+        int valueOffset = quadCount * VERTICES_PER_QUAD;
+        int[] indices = new int[6];
+        // triangle 1
+        indices[0] = valueOffset + 0;
+        indices[1] = valueOffset + 1;
+        indices[2] = valueOffset + 3;
+
+        // triangle 2
+        indices[3] = valueOffset + 1;
+        indices[4] = valueOffset + 2;
+        indices[5] = valueOffset + 3;
+        IntBuffer indicesBuffer = stackMallocInt(indices.length);
+        indicesBuffer.put(indices).flip();
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (long) quadCount * INDICES_PER_QUAD * Float.BYTES,
+            indicesBuffer);
+      }
+
+      ++quadCount;
+      if (quadCount < 10)
+        logger.info("render is now {}", this);
+
     }
-
-    // clock-wise
-    // 0 1 3 - 1 2 3
-
-    // add offset of 4 vertices for the indices
-
-    // 4 5 7 - 5 6 7
-    // 8 9 11  9 10 11
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      int valueOffset = quadCount * VERTICES_PER_QUAD;
-      int[] indices = new int[6];
-      // triangle 1
-      indices[0] = valueOffset + 0;
-      indices[1] = valueOffset + 1;
-      indices[2] = valueOffset + 3;
-
-      // triangle 2
-      indices[3] = valueOffset + 1;
-      indices[4] = valueOffset + 2;
-      indices[5] = valueOffset + 3;
-      IntBuffer indicesBuffer = stackMallocInt(indices.length);
-      indicesBuffer.put(indices).flip();
-      glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (long) quadCount * INDICES_PER_QUAD * Float.BYTES, indicesBuffer);
-    }
-
-    ++quadCount;
-    if (quadCount < 10)
-    logger.info("render is now {}", this);
   }
 
   private void load() {
@@ -177,6 +210,154 @@ public class ColoredQuadRenderer {
       }
 
       logger.info("colored Quad = {}", this);
+    }
+  }
+
+
+  private static class ColoredQuadRenderBatch {
+
+    private int quadCount;
+    private int vaoID, vboID, eboID;
+
+    ColoredQuadRenderBatch() {
+      load();
+    }
+
+    boolean addQuad(ColoredQuad quad) {
+
+      if (quadCount >= MAX_QUADS) {
+        logger.error("no room left");
+        return false;
+      }
+
+      // update sub-region of the buffer
+      glBindBuffer(GL_ARRAY_BUFFER, vboID);
+      try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+        FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+        vertexBuffer.put(quad.vertices).flip();
+        glBufferSubData(GL_ARRAY_BUFFER,
+            (long) quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+            vertexBuffer);
+      }
+
+      // clock-wise
+      // 0 1 3 - 1 2 3
+
+      // add offset of 4 vertices for the indices
+
+      // 4 5 7 - 5 6 7
+      // 8 9 11  9 10 11
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+      try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+        int valueOffset = quadCount * VERTICES_PER_QUAD;
+        int[] indices = new int[6];
+        // triangle 1
+        indices[0] = valueOffset + 0;
+        indices[1] = valueOffset + 1;
+        indices[2] = valueOffset + 3;
+
+        // triangle 2
+        indices[3] = valueOffset + 1;
+        indices[4] = valueOffset + 2;
+        indices[5] = valueOffset + 3;
+        IntBuffer indicesBuffer = stackMallocInt(indices.length);
+        indicesBuffer.put(indices).flip();
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (long) quadCount * INDICES_PER_QUAD * Float.BYTES, indicesBuffer);
+      }
+
+      ++quadCount;
+      if (quadCount < 10)
+        logger.info("render is now {}", this);
+
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "ColoredQuadRenderBatch{" +
+          "quadCount=" + quadCount +
+          '}';
+    }
+
+    void render() {
+
+      glBindVertexArray(vaoID);
+
+      glDrawElements(
+          GL_TRIANGLES,
+          quadCount * INDICES_PER_QUAD, // number of vertices
+          GL_UNSIGNED_INT, // type of index values
+          0); // where to start if index buffer object is bound
+
+    }
+
+
+    private void load() {
+
+      vaoID = glGenVertexArrays();
+      glBindVertexArray(vaoID);
+
+      vboID = glGenBuffers();
+      glBindBuffer(GL_ARRAY_BUFFER, vboID);
+
+      // allocate buffer space but do not load
+      // DYNAMIC
+      // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
+      glBufferData(GL_ARRAY_BUFFER,
+          (long) MAX_QUADS * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+          GL_DYNAMIC_DRAW);
+
+      glVertexAttribPointer(
+          0,
+          POSITION_SIZE,
+          GL_FLOAT,
+          false,
+          VERTEX_TOTAL_SIZE * Float.BYTES,
+          0);
+      glEnableVertexAttribArray(0);
+
+      glVertexAttribPointer(
+          1,
+          COLOR_SIZE,
+          GL_FLOAT,
+          false,
+          VERTEX_TOTAL_SIZE * Float.BYTES,
+          POSITION_SIZE * Float.BYTES);
+      glEnableVertexAttribArray(1);
+
+
+      eboID = glGenBuffers();
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+      // allocate buffer space but do not load
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
+
+      logger.info("after loading {} {} {}", vaoID, vboID, eboID);
+
+    }
+
+  }
+
+
+  public static class ColoredVertex {
+
+    private final float[] position; // xyz
+
+    private final float[] color; // rgba
+
+    public ColoredVertex(float[] position, float[] color) {
+      if (position.length != 3 || color.length != 4) throw new IllegalArgumentException("incorrect args");
+
+      this.position = position;
+      this.color = color;
+    }
+
+    public float[] getPosition() {
+      return position;
+    }
+
+    public float[] getColor() {
+      return color;
     }
   }
 }

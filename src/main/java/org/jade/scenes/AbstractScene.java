@@ -1,10 +1,13 @@
 package org.jade.scenes;
 
+import org.jade.render.ColoredQuadRenderer;
 import org.jade.render.camera.Camera;
 
 public abstract class AbstractScene implements Scene {
 
   protected ChangeSceneCallback changeSceneCallback;
+
+  protected ColoredQuadRenderer coloredVertexRenderer;
 
   @Override
   public void update(double dt) {
@@ -20,6 +23,9 @@ public abstract class AbstractScene implements Scene {
 
   @Override
   public void render() {
+    if (coloredVertexRenderer != null) {
+      coloredVertexRenderer.render();
+    }
   }
 
   @Override
