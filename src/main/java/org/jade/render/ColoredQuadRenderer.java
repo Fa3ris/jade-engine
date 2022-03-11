@@ -23,9 +23,11 @@ public class ColoredQuadRenderer {
   private static final int COLOR_SIZE = 4;
   private static final int VERTEX_TOTAL_SIZE = POSITION_SIZE + COLOR_SIZE;
 
-  private static final int MAX_QUADS = 500;
+  private static final int MAX_QUADS_PER_BATCH = 500;
   private static final int VERTICES_PER_QUAD = 4;
   private static final int INDICES_PER_QUAD = 6;
+
+  private static final int MAX_TOTAL_QUADS = 1000;
 
   private int quadCount;
   private int vaoID, vboID, eboID;
@@ -73,6 +75,11 @@ public class ColoredQuadRenderer {
 
   public void addQuad(ColoredQuad quad) {
 
+    if (totalQuads >= MAX_TOTAL_QUADS) {
+      logger.error("max totalQuads reached");
+      return;
+    }
+    
     ++totalQuads;
     for (ColoredQuadRenderBatch batch : batches) {
       if (batch.addQuad(quad)) {
@@ -89,7 +96,7 @@ public class ColoredQuadRenderer {
 
     if (false) {
 
-      if (quadCount >= MAX_QUADS) {
+      if (quadCount >= MAX_QUADS_PER_BATCH) {
         logger.error("no room left");
         return;
       }
@@ -149,7 +156,7 @@ public class ColoredQuadRenderer {
     // DYNAMIC
     // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
     glBufferData(GL_ARRAY_BUFFER,
-        (long) MAX_QUADS * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+        (long) MAX_QUADS_PER_BATCH * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
         GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(
@@ -174,7 +181,7 @@ public class ColoredQuadRenderer {
     eboID = glGenBuffers();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
     // allocate buffer space but do not load
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS_PER_BATCH * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
 
     logger.info("after loading {} {} {}", vaoID, vboID, eboID);
   }
@@ -225,7 +232,7 @@ public class ColoredQuadRenderer {
 
     boolean addQuad(ColoredQuad quad) {
 
-      if (quadCount >= MAX_QUADS) {
+      if (quadCount >= MAX_QUADS_PER_BATCH) {
         logger.error("no room left");
         return false;
       }
@@ -305,7 +312,7 @@ public class ColoredQuadRenderer {
       // DYNAMIC
       // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
       glBufferData(GL_ARRAY_BUFFER,
-          (long) MAX_QUADS * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+          (long) MAX_QUADS_PER_BATCH * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
           GL_DYNAMIC_DRAW);
 
       glVertexAttribPointer(
@@ -330,7 +337,7 @@ public class ColoredQuadRenderer {
       eboID = glGenBuffers();
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
       // allocate buffer space but do not load
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS_PER_BATCH * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
 
       logger.info("after loading {} {} {}", vaoID, vboID, eboID);
 
