@@ -1,6 +1,7 @@
 package org.jade.scenes;
 
 import org.jade.render.camera.Camera;
+import org.jade.render.pool.ResourcePool;
 
 public interface Scene {
 
@@ -12,6 +13,8 @@ public interface Scene {
 
   void setCamera(Camera camera);
   void setFOV(double angleDegree);
+
+  void setPool(ResourcePool pool);
 
   void setChangeSceneCallback(ChangeSceneCallback changeSceneCallback);
 }

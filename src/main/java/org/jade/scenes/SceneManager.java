@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jade.KeyListener;
 import org.jade.render.camera.Camera;
+import org.jade.render.pool.ResourcePool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,9 @@ public class SceneManager implements ChangeSceneCallback {
   private int currentSceneIndex;
   private final List<Scene> scenes = new ArrayList<>(20);
 
+  private final ResourcePool pool = new ResourcePool();
+
+
   public SceneManager() {}
 
   void addScene(Scene scene) {
@@ -27,6 +31,7 @@ public class SceneManager implements ChangeSceneCallback {
 
   void init() {
     currentScene = scenes.get(0);
+    currentScene.setPool(pool);
     currentScene.load();
   }
 
@@ -140,5 +145,9 @@ public class SceneManager implements ChangeSceneCallback {
     }
     currentScene.setChangeSceneCallback(this);
 //    sceneMap.put(scene, currentScene);
+  }
+
+  public void delete() {
+    pool.clearTextures();
   }
 }

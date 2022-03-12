@@ -54,4 +54,11 @@ public class ResourcePool {
     textures.put(hash, texture);
     return texture;
   }
+
+  public void clearTextures() {
+    for (Texture texture : textures.values()) {
+      texture.delete();
+    }
+    textures.clear();
+  }
 }

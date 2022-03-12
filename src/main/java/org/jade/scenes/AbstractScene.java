@@ -2,6 +2,7 @@ package org.jade.scenes;
 
 import org.jade.render.ColoredQuadRenderer;
 import org.jade.render.camera.Camera;
+import org.jade.render.pool.ResourcePool;
 
 public abstract class AbstractScene implements Scene {
 
@@ -37,6 +38,9 @@ public abstract class AbstractScene implements Scene {
   public void setFOV(double angleDegree) {
 
   }
+
+  @Override
+  public void setPool(ResourcePool pool) {}
 
   @Override
   public void setChangeSceneCallback(ChangeSceneCallback changeSceneCallback) {

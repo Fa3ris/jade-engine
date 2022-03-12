@@ -129,6 +129,17 @@ public class Shader {
     }
   }
 
+  public void setUniform1iv(String name, int[] values) {
+    use();
+    try (MemoryStack ignored = MemoryStack.stackPush()) {
+      IntBuffer buffer = MemoryStack.stackMallocInt(values.length);
+      buffer.put(values);
+      buffer.flip();
+      int uniformLocation = GL30.glGetUniformLocation(programID, name);
+      GL30.glUniform1iv(uniformLocation, buffer);
+    }
+  }
+
   private String readFile(String path) {
     try {
       return new String(Objects.requireNonNull(

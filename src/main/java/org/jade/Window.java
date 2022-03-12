@@ -50,12 +50,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
-import org.jade.render.ColoredQuadRenderer.ColoredVertex;
-import org.jade.render.ColoredQuadRenderer;
-import org.jade.render.ColoredQuadRenderer.ColoredQuad;
 import org.jade.render.camera.Camera;
-import org.jade.render.pool.ResourcePool;
-import org.jade.render.shader.Shader;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
 import org.lwjgl.Version;
@@ -122,18 +117,6 @@ public class Window {
 
     sceneManager = SceneManagerFactory.createInstance();
 
-    ResourcePool pool = new ResourcePool();
-
-    for (int i = 0; i < 3; i++) {
-      logger.info("request shader");
-      pool.getShader("shaders/colored-renderer/vertexShader.glsl",
-          "shaders/colored-renderer/fragmentShader.glsl");
-    }
-
-    for (int i = 0; i < 3; i++) {
-      logger.info("request texture");
-      pool.getTexture("textures/awesomeface.png");
-    }
   }
 
   private void init() {
@@ -452,6 +435,8 @@ public class Window {
 
   private void cleanup() {
     logger.debug("clean window");
+
+    sceneManager.delete();
 
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
