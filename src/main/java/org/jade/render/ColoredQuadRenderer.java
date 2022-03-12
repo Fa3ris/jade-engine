@@ -186,6 +186,14 @@ public class ColoredQuadRenderer {
     logger.info("after loading {} {} {}", vaoID, vboID, eboID);
   }
 
+  public void clean() {
+
+    glDeleteBuffers(vboID);
+    glDeleteBuffers(eboID);
+    glDeleteVertexArrays(vaoID);
+
+  }
+
   public static class ColoredQuad {
 
     private final float[] vertices = new float[VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE];
