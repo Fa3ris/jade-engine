@@ -14,6 +14,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_MAXIMIZED;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
+import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_DEBUG_CONTEXT;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
@@ -50,6 +51,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
+import org.jade.debug.DebugCallback;
 import org.jade.render.camera.Camera;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
@@ -57,6 +59,10 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL42;
+import org.lwjgl.opengl.GL43;
+import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,6 +140,7 @@ public class Window {
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE); // full window
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE); // debug output
 
     if (faulty) {
       // request an impossible version of openGL
@@ -204,6 +211,20 @@ public class Window {
     // bindings available for use.
     GL.createCapabilities();
 
+
+    final int flags = GL30.glGetInteger(GL30.GL_CONTEXT_FLAGS);
+    if ((flags & GL43.GL_CONTEXT_FLAG_DEBUG_BIT) != 0) {
+      logger.info("debug output available");
+      GL30.glEnable(GL43.GL_DEBUG_OUTPUT);
+      GL30.glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+      // cannot have two debug callbacks - use ljgwl implementation
+      if (false) {
+        GL43.glDebugMessageCallback(new DebugCallback(), 0);
+      }
+      GLUtil.setupDebugMessageCallback();
+    }
+    
     // control how to map normalized device coordinates to window coordinates
     // when window gets resized, can change the viewport according to the new dimensions
     GL30.glViewport(0, 0, w, h);
