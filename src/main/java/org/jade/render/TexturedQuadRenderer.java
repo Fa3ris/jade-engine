@@ -26,8 +26,8 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import org.jade.debug.Debugger;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
 import org.lwjgl.system.MemoryStack;
@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TexturedQuadRenderer {
+
+  private static final Debugger glDebugger = new Debugger();
 
   private static final Logger logger = LoggerFactory.getLogger(TexturedQuadRenderer.class);
 
@@ -170,13 +172,20 @@ public class TexturedQuadRenderer {
 
       // update sub-region of the buffer
       glBindBuffer(GL_ARRAY_BUFFER, vboID);
+
+      glDebugger.getError();
+
       try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
         FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
         vertexBuffer.put(quad.vertices).flip();
         glBufferSubData(GL_ARRAY_BUFFER,
             (long) quadCount * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
             vertexBuffer);
+
+        glDebugger.getError();
+
       }
+
 
       // clock-wise
       // 0 1 3 - 1 2 3
@@ -187,6 +196,9 @@ public class TexturedQuadRenderer {
       // 8 9 11  9 10 11
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+
+      glDebugger.getError();
+
       try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
         int valueOffset = quadCount * VERTICES_PER_QUAD;
         int[] indices = new int[6];
@@ -202,6 +214,8 @@ public class TexturedQuadRenderer {
         IntBuffer indicesBuffer = stackMallocInt(indices.length);
         indicesBuffer.put(indices).flip();
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (long) quadCount * INDICES_PER_QUAD * Float.BYTES, indicesBuffer);
+
+        glDebugger.getError();
       }
 
       ++quadCount;
@@ -216,12 +230,15 @@ public class TexturedQuadRenderer {
 
       glBindVertexArray(vaoID);
 
+      glDebugger.getError();
+
       glDrawElements(
           GL_TRIANGLES,
           quadCount * INDICES_PER_QUAD, // number of vertices
           GL_UNSIGNED_INT, // type of index values
           0); // where to start if index buffer object is bound
 
+      glDebugger.getError();
     }
 
     private void load() {
