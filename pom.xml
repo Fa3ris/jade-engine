@@ -16,6 +16,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
+    <lwjgl.version>3.2.3</lwjgl.version>
   </properties>
 
   <dependencyManagement>
@@ -23,7 +24,7 @@
       <dependency>
         <groupId>org.lwjgl</groupId>
         <artifactId>lwjgl-bom</artifactId>
-        <version>3.2.3</version>
+        <version>${lwjgl.version}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -46,7 +47,7 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.36</version>
     </dependency>
-    <!-- to console   -->
+    <!-- log to console   -->
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -54,37 +55,64 @@
       <version>1.7.36</version>
     </dependency>
 
-
-
-
+    <!--#############################-->
+    <!-- LightWeight Java Game Library -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl</artifactId>
     </dependency>
+
+    <!--#############################-->
+    <!--  Open Asset Import Library   -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-assimp</artifactId>
     </dependency>
+
+    <!--#############################-->
+    <!--  Graphics Library Framework   -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-glfw</artifactId>
     </dependency>
+
+    <!--#############################-->
+    <!--  Native File Dialog   -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-nfd</artifactId>
     </dependency>
+    <!--#############################-->
+    <!--  Open Audio Library   -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-openal</artifactId>
     </dependency>
+    <!--#############################-->
+    <!--  Open Graphics Library   -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-opengl</artifactId>
     </dependency>
+
+    <!--#############################-->
+    <!--  Sean Barrett   -->
+    <!--  resource loading -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-stb</artifactId>
     </dependency>
+
+    <!--#############################-->
+    <!-- natives for WINDOWS    -->
+    <!--#############################-->
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl</artifactId>
@@ -120,6 +148,10 @@
       <artifactId>lwjgl-stb</artifactId>
       <classifier>natives-windows</classifier>
     </dependency>
+
+    <!--#############################-->
+    <!-- MATHS    -->
+    <!--#############################-->
     <dependency>
       <groupId>org.joml</groupId>
       <artifactId>joml</artifactId>
