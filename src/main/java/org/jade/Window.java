@@ -52,6 +52,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.debug.DebugCallback;
+import org.jade.gui.Gui;
 import org.jade.render.camera.Camera;
 import org.jade.scenes.SceneManager;
 import org.jade.scenes.SceneManagerFactory;
@@ -59,9 +60,7 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
-import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -81,6 +80,7 @@ public class Window {
   private int w, h;
   private final String title;
 
+  private Gui gui;
   /**
    * in seconds
    */
@@ -238,6 +238,8 @@ public class Window {
       // re-render during resizing
       render();
     });
+
+    gui = new Gui(windowHandle);
   }
 
   private void loop() {
@@ -321,6 +323,8 @@ public class Window {
         * given a pitch and yaw, find a corresponding direction to affect to cameraFront
         * */
       }
+
+      gui.process();
 
         /*
         ECS
@@ -445,6 +449,9 @@ public class Window {
 
     sceneManager.render();
 
+    // render GUI over the scene
+    gui.render();
+
     glfwSwapBuffers(windowHandle); // swap the color buffers
 
   }
@@ -459,6 +466,7 @@ public class Window {
 
     sceneManager.delete();
 
+    gui.dispose();
     // Free the window and associated callbacks
     glfwFreeCallbacks(windowHandle);
     glfwDestroyWindow(windowHandle);
