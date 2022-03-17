@@ -8,7 +8,6 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glBufferSubData;
@@ -23,8 +22,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import org.jade.ecs.Component;
 import org.jade.render.Sprite;
 import org.jade.render.shader.Shader;
@@ -35,23 +32,14 @@ import org.slf4j.LoggerFactory;
 
 public class SpriteRenderer extends Component {
 
-  private static final int POSITION_SIZE = 3;
-  private static final int TEXTURE_SIZE = 2;
-  private static final int TEXTURE_ID_SIZE = 1;
-  private static final int VERTEX_TOTAL_SIZE = POSITION_SIZE + TEXTURE_SIZE + TEXTURE_ID_SIZE;
+  private final static Logger logger = LoggerFactory.getLogger(SpriteRenderer.class);
 
   private static final int VERTICES_PER_QUAD = 4;
   private static final int INDICES_PER_QUAD = 6;
 
   private static final int MAX_QUADS_PER_BATCH = 500;
 
-  private final static Logger logger = LoggerFactory.getLogger(SpriteRenderer.class);
-
   private int vaoID, vboID, eboID;
-
-
-  private int totalSprites;
-  private int vertexTotalSize;
 
   // pass array of sizes
   // index in array gives the index of attribute
@@ -61,31 +49,29 @@ public class SpriteRenderer extends Component {
   // offset  = 0
   // for sizes
   // offset += size * Float.bytes
-
-
-
+  private int vertexTotalSizeInBytes;
+  private int vertexTotalSize;
   private int[] vertexAttributesSizes;
 
-  @Deprecated
-  private final List<Texture> textures = new ArrayList<>();
   private final Texture[] texturesArr = new Texture[8];
+  private int totalTextures;
+
+  private final Sprite[] spritesArr = new Sprite[MAX_QUADS_PER_BATCH];
+  private int totalSprites;
+
   private Shader shader;
-
-  List<Sprite> sprites = new ArrayList<>();
-
-  Sprite[] spritesArr = new Sprite[MAX_QUADS_PER_BATCH];
 
   public void setShader(Shader shader) {
     this.shader = shader;
   }
 
   public void addTexture(Texture texture) {
-    for (int i = 0; i < texturesArr.length; i++) {
-      if (texturesArr[i] == null) {
-        texturesArr[i] = texture;
-        break;
-      }
+    if (totalTextures >= texturesArr.length) {
+      logger.warn("textures are full");
+      return;
     }
+    texturesArr[totalTextures] = texture;
+    ++totalTextures;
   }
 
   public void setVertexAttributeSizes(int[] sizes) {
@@ -94,22 +80,8 @@ public class SpriteRenderer extends Component {
     for (int size : sizes) {
       totalSize += size;
     }
-    totalSize *= Float.BYTES;
-
     vertexTotalSize = totalSize;
-    int offset=0;
-    for (int i = 0; i < sizes.length; i++) {
-      glVertexAttribPointer(
-          i,
-          sizes[i],
-          GL_FLOAT,
-          false,
-          totalSize,
-          offset);
-      glEnableVertexAttribArray(i);
-
-      offset += sizes[i] * Float.BYTES;
-    }
+    vertexTotalSizeInBytes = totalSize * Float.BYTES;
   }
 
   @Override
@@ -126,17 +98,17 @@ public class SpriteRenderer extends Component {
     // allocate buffer space but do not load
     // Use DYNAMIC_DRAW when the data store contents will be modified repeatedly and used many times.
     glBufferData(GL_ARRAY_BUFFER,
-        (long) MAX_QUADS_PER_BATCH * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+        (long) MAX_QUADS_PER_BATCH * VERTICES_PER_QUAD * vertexTotalSizeInBytes,
         GL_DYNAMIC_DRAW);
 
     int offset = 0;
-    for (int i = 0; i < vertexAttributesSizes.length; i++) {
+    for (int i = 0; i < vertexAttributesSizes.length; ++i) {
       glVertexAttribPointer(
           i,
           vertexAttributesSizes[i],
           GL_FLOAT,
           false,
-          vertexTotalSize,
+          vertexTotalSizeInBytes,
           offset);
       glEnableVertexAttribArray(i);
 
@@ -146,7 +118,9 @@ public class SpriteRenderer extends Component {
     eboID = glGenBuffers();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
     // allocate buffer space but do not load
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_QUADS_PER_BATCH * INDICES_PER_QUAD * Float.BYTES, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        MAX_QUADS_PER_BATCH * INDICES_PER_QUAD * Float.BYTES,
+        GL_DYNAMIC_DRAW);
 
   }
 
@@ -158,12 +132,11 @@ public class SpriteRenderer extends Component {
     for (int i = 0; i < totalSprites; i++) {
       Sprite sprite = spritesArr[i];
       if (sprite.isDirty()) {
-        // rebuffer for
         try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-          FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+          FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
           vertexBuffer.put(sprite.getVertices()).flip();
           glBufferSubData(GL_ARRAY_BUFFER,
-              (long) i * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+              (long) i * VERTICES_PER_QUAD * vertexTotalSizeInBytes * Float.BYTES,
               vertexBuffer);
         }
       }
@@ -171,7 +144,6 @@ public class SpriteRenderer extends Component {
   }
 
   /*
-
    need position
        texture coordinates within sprite sheet - what if need more than 8 textures ?
        texture id
@@ -183,16 +155,17 @@ public class SpriteRenderer extends Component {
     */
   public void addSprite(Sprite sprite) {
     if (totalSprites >= spritesArr.length) {
+      logger.warn("sprites full");
       return;
     }
     // update sub-region of the buffer
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
     try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE);
+      FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
       vertexBuffer.put(sprite.getVertices()).flip();
       glBufferSubData(GL_ARRAY_BUFFER,
-          (long) totalSprites * VERTICES_PER_QUAD * VERTEX_TOTAL_SIZE * Float.BYTES,
+          (long) totalSprites * VERTICES_PER_QUAD * vertexTotalSizeInBytes,
           vertexBuffer);
     }
 
@@ -206,48 +179,40 @@ public class SpriteRenderer extends Component {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
 
     try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      int valueOffset = totalSprites * VERTICES_PER_QUAD;
-      int[] indices = new int[6];
-      // TODO: put values in buffer directly
-      // triangle 1
-      indices[0] = valueOffset;
-      indices[1] = valueOffset + 1;
-      indices[2] = valueOffset + 3;
-
-      // triangle 2
-      indices[3] = valueOffset + 1;
-      indices[4] = valueOffset + 2;
-      indices[5] = valueOffset + 3;
-      IntBuffer indicesBuffer = stackMallocInt(indices.length);
-      indicesBuffer.put(indices).flip();
-      glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, (long) totalSprites * INDICES_PER_QUAD * Float.BYTES, indicesBuffer);
+      final int valueOffset = totalSprites * VERTICES_PER_QUAD;
+      IntBuffer indicesBuffer =
+          stackMallocInt(6)
+              .put(valueOffset)
+              .put(valueOffset + 1)
+              .put(valueOffset + 3)
+              .put(valueOffset + 1)
+              .put(valueOffset + 2)
+              .put(valueOffset + 3)
+              .flip();
+      glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
+          (long) totalSprites * INDICES_PER_QUAD * Float.BYTES,
+          indicesBuffer);
 
     }
 
     spritesArr[totalSprites] = sprite;
-    sprites.add(sprite);
     ++totalSprites;
-
   }
 
   public void render() {
-    logger.info("rendering {} sprites", sprites.size());
+    logger.info("rendering {} sprites", totalSprites);
 
     if (shader != null) {
       shader.use();
 
-      // TODO use textures Arr
-      // how come it works ?
-      for (int i = 0; i < textures.size(); i++) {
-
+      for (int i = 0; i < totalTextures; i++) {
         // enable texture unit texture unit
         // sampler uniform value correspond to index of texture unit
         // i.e. TEXTURE0 = 0
         //      TEXTURE1 = 1
         //      TEXTURE2 = 2
         // ...
-        // TODO use texturesArr
-        textures.get(i).use(GL_TEXTURE0 + i);
+        texturesArr[i].use(GL_TEXTURE0 + i);
       }
     }
 
