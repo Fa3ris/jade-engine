@@ -51,6 +51,7 @@ public class SceneManager implements ChangeSceneCallback {
     }
     currentScene.unload();
     currentScene = scenes.get(i);
+    currentScene.setPool(pool);
     currentScene.load();
   }
 
