@@ -63,6 +63,9 @@ public class SpriteRenderer extends Component {
 
   public void setShader(Shader shader) {
     this.shader = shader;
+    shader.use();
+    // upload uniform variable
+    shader.setUniform1iv("textures", new int[] {0, 1, 2, 3, 4, 5, 6, 7});
   }
 
   public void addTexture(Texture texture) {
