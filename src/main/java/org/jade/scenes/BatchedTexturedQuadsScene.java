@@ -1,5 +1,8 @@
 package org.jade.scenes;
 
+import org.components.SpriteRenderer;
+import org.jade.ecs.Entity;
+import org.jade.render.Sprite;
 import org.jade.render.TexturedQuadRenderer;
 import org.jade.render.TexturedQuadRenderer.TexturedQuad;
 import org.jade.render.TexturedQuadRenderer.TexturedVertex;
@@ -13,6 +16,8 @@ public class BatchedTexturedQuadsScene extends AbstractScene {
 
   private ResourcePool pool;
 
+  SpriteRenderer spriteRenderer;
+
   @Override
   public void setPool(ResourcePool pool) {
     this.pool = pool;
@@ -24,7 +29,7 @@ public class BatchedTexturedQuadsScene extends AbstractScene {
 
     TexturedVertex[] vertices = new TexturedVertex[4];
 
-//    in order: top-left => top-right => bottom-right => bottom-left
+    // in order: top-left => top-right => bottom-right => bottom-left
     float texId0 = 0;
     vertices[0] = new TexturedVertex(new float[] {-0.5f,  0.5f, 0.0f}, new float[] {0f, 1f}, texId0);
     vertices[1] = new TexturedVertex(new float[] {0.5f, 0.5f, 0.0f}, new float[] {1f, 1f}, texId0);
@@ -63,15 +68,38 @@ public class BatchedTexturedQuadsScene extends AbstractScene {
 
     texturedQuadRenderer.setShader(shader);
 
+    spriteRenderer = new SpriteRenderer();
+
+    spriteRenderer.setVertexAttributeSizes(new int[]{3, 2, 1});
+    spriteRenderer.start();
+
+    spriteRenderer.setShader(shader);
+    spriteRenderer.addTexture(wallTexture);
+
+    Entity entity = new Entity();
+
+    Sprite aWall = new Sprite(wallTexture);
+    aWall.setEntity(entity);
+
+    spriteRenderer.addSprite(aWall);
   }
+
 
   @Override
   public void unload() {
     texturedQuadRenderer.clean();
   }
 
+
+  @Override
+  public void update(double dt) {
+    super.update(dt);
+    spriteRenderer.update(dt);
+  }
+
   @Override
   public void render() {
-    texturedQuadRenderer.render();
+//    texturedQuadRenderer.render();
+    spriteRenderer.render();
   }
 }

@@ -23,6 +23,7 @@ public class Entity {
     return null;
   }
 
+  // pbl can have only 1 component of a given type
   public void addComponent(Component c) {
     components.put(c.getClass().getName(), c);
     c.entity = this;

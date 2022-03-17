@@ -124,6 +124,10 @@ public class Texture {
     load(flipVertically, false);
   }
 
+  /**
+   * binds this Texture to a texture unit
+   * @param textureUnit
+   */
   public void use(int textureUnit) {
     glActiveTexture(textureUnit);
     glBindTexture(GL_TEXTURE_2D, id);
