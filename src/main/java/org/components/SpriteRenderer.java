@@ -135,14 +135,19 @@ public class SpriteRenderer extends Component {
     for (int i = 0; i < totalSprites; i++) {
       Sprite sprite = spritesArr[i];
       if (sprite.isDirty()) {
-        try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-          FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
-          vertexBuffer.put(sprite.getVertices()).flip();
-          glBufferSubData(GL_ARRAY_BUFFER,
-              (long) i * VERTICES_PER_QUAD * vertexTotalSizeInBytes * Float.BYTES,
-              vertexBuffer);
-        }
+        logger.info("sprite is dirty - clean it");
+        bufferVBOSubData(sprite.getVertices(), i);
       }
+    }
+  }
+
+  private void bufferVBOSubData(float[] vertices, int index) {
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
+      vertexBuffer.put(vertices).flip();
+      glBufferSubData(GL_ARRAY_BUFFER,
+          (long) index * VERTICES_PER_QUAD * vertexTotalSizeInBytes,
+          vertexBuffer);
     }
   }
 
@@ -164,13 +169,7 @@ public class SpriteRenderer extends Component {
     // update sub-region of the buffer
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
-    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
-      FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
-      vertexBuffer.put(sprite.getVertices()).flip();
-      glBufferSubData(GL_ARRAY_BUFFER,
-          (long) totalSprites * VERTICES_PER_QUAD * vertexTotalSizeInBytes,
-          vertexBuffer);
-    }
+    bufferVBOSubData(sprite.getVertices(), totalSprites);
 
     // clock-wise
     // 0 1 3 - 1 2 3
