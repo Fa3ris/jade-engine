@@ -1,31 +1,38 @@
 package org.jade.scenes;
 
+import org.components.SpriteComponent;
 import org.components.SpriteRenderer;
+import org.jade.ecs.ECS;
 import org.jade.ecs.Entity;
 import org.jade.render.Sprite;
-import org.jade.render.pool.ResourcePool;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.systems.RenderSystem;
 
 public class SpriteRendererScene extends AbstractScene {
 
   private static final Logger logger = LoggerFactory.getLogger(SceneManager.class);
 
-  private ResourcePool pool;
-
   SpriteRenderer spriteRenderer;
 
   private Entity entity;
-  @Override
-  public void setPool(ResourcePool pool) {
-    this.pool = pool;
-  }
+
+  ECS ecs;
 
   @Override
   public void load() {
 
+    ecs = new ECS();
+
+    ecs.addSystem(new RenderSystem());
+
+    Entity dummy = new Entity();
+
+    dummy.addComponent(new SpriteComponent(new Sprite(pool.getTexture("textures/wall.jpg"))));
+
+    ecs.addEntity(dummy);
     Texture wallTexture = pool.getTexture("textures/wall.jpg");
     Texture marioTexture = pool.getTexture("textures/mario.png");
     wallTexture.load(false);
@@ -79,10 +86,12 @@ public class SpriteRendererScene extends AbstractScene {
     logger.info("update sprite renderer scene");
     entity.update(dt);
     spriteRenderer.update(dt);
+    ecs.update(dt);
   }
 
   @Override
   public void render() {
     spriteRenderer.render();
+    ecs.render();
   }
 }
