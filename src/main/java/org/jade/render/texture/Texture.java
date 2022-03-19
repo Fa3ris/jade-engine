@@ -128,6 +128,7 @@ public class Texture {
    * binds this Texture to a texture unit
    * @param textureUnit
    */
+  // TODO just pass the offset of texture unit
   public void use(int textureUnit) {
     glActiveTexture(textureUnit);
     glBindTexture(GL_TEXTURE_2D, id);

@@ -30,6 +30,7 @@ import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO: make it a System or used by System to draw a batch of sprites
 public class SpriteRenderer extends Component {
 
   private final static Logger logger = LoggerFactory.getLogger(SpriteRenderer.class);
@@ -225,5 +226,10 @@ public class SpriteRenderer extends Component {
         totalSprites * INDICES_PER_QUAD, // number of vertices
         GL_UNSIGNED_INT, // type of index values
         0); // where to start if index buffer object is bound
+  }
+
+  public boolean addSpriteComponent(SpriteComponent spriteComponent) {
+
+    return false;
   }
 }

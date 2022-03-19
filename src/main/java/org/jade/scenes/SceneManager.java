@@ -6,6 +6,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import java.util.ArrayList;
 import java.util.List;
 import org.jade.KeyListener;
+import org.systems.RenderSystem;
 import org.jade.render.camera.Camera;
 import org.jade.render.pool.ResourcePool;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ public class SceneManager implements ChangeSceneCallback {
 
   private final ResourcePool pool = new ResourcePool();
 
+  private RenderSystem renderSystem;
 
   public SceneManager() {}
 
@@ -102,6 +104,7 @@ public class SceneManager implements ChangeSceneCallback {
     }
     currentScene.unload();
     currentScene = scenes.get(i);
+    currentScene.setPool(pool);
     currentScene.load();
   }
 

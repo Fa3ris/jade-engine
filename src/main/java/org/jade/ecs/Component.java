@@ -9,5 +9,5 @@ public abstract class Component {
   public void setEntity(Entity entity) {
     this.entity = entity;
   }
-  public abstract void update(double dt);
+  public void update(double dt) {}
 }

@@ -1,15 +1,21 @@
 package org.jade.render;
 
 import org.jade.ecs.Component;
+import org.jade.render.texture.Texture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Sprite extends Component {
 
+  // to know if texture is present in this sprite renderer
+  // compare by equality
+  private Texture texture;
+
   private static final Logger logger = LoggerFactory.getLogger(Sprite.class);
 
   private float topCoord, leftCoord, rightCoord, bottomCoord;
 
+  // TODO extract to other component - unrelated to the sprite itself
   private float topPos, leftPos, rightPos, bottomPos;
 
   private float texId;
@@ -31,6 +37,11 @@ public class Sprite extends Component {
 
     leftCoord = 0;
     rightCoord = 1;
+  }
+
+  public Sprite(Texture texture) {
+    this();
+    this.texture = texture;
   }
 
   // remove when useless
