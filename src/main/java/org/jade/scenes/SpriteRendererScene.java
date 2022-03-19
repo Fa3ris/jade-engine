@@ -3,9 +3,6 @@ package org.jade.scenes;
 import org.components.SpriteRenderer;
 import org.jade.ecs.Entity;
 import org.jade.render.Sprite;
-import org.jade.render.TexturedQuadRenderer;
-import org.jade.render.TexturedQuadRenderer.TexturedQuad;
-import org.jade.render.TexturedQuadRenderer.TexturedVertex;
 import org.jade.render.pool.ResourcePool;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
@@ -49,7 +46,21 @@ public class SpriteRendererScene extends AbstractScene {
     spriteRenderer.addTexture(marioTexture);
 
     entity = new Entity();
-    Sprite aWall = new Sprite(wallTexture);
+    Sprite aWall = new Sprite();
+
+    float topPos = .5f;
+    float leftPos = -.5f;
+
+    float rightPos = .5f;
+    float bottomPos = -.5f;
+    aWall.setPos(topPos, leftPos, bottomPos, rightPos);
+
+    float topCoord = 1;
+    float bottomCoord = 0;
+
+    float leftCoord = 0;
+    float rightCoord = 1;
+    aWall.setTexCoords(topCoord, leftCoord, bottomCoord, rightCoord);
     aWall.setEntity(entity);
     entity.addComponent(aWall);
 

@@ -78,7 +78,7 @@ public class BatchedTexturedQuadsScene extends AbstractScene {
 
     Entity entity = new Entity();
 
-    Sprite aWall = new Sprite(wallTexture);
+    Sprite aWall = new Sprite();
     aWall.setEntity(entity);
 
     spriteRenderer.addSprite(aWall);
