@@ -30,7 +30,7 @@ public class SpriteRendererScene extends AbstractScene {
 
     Entity dummy = new Entity();
 
-    dummy.addComponent(new SpriteComponent(new Sprite(pool.getTexture("textures/wall.jpg"))));
+    dummy.addComponent(new SpriteComponent(pool.getSprite("textures/wall.jpg")));
 
     ecs.addEntity(dummy);
     Texture wallTexture = pool.getTexture("textures/wall.jpg");

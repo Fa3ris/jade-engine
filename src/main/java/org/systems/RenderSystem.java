@@ -25,35 +25,42 @@ public class RenderSystem implements System {
 
       SpriteComponent spriteComponent = entity.getComponent(SpriteComponent.class);
       if (spriteComponent == null) {
-        logger.info("no sprite component");
+        logger.info("no sprite component - no need to add");
         continue;
       }
 
       logger.info("found sprite component");
 
-      SpriteRenderingInfo renderingInfo = entity.getComponent(SpriteRenderingInfo.class);
+      if (spriteComponent.getSpriteRendererIndex() >= 0) {
+        logger.info("already assigned to sprite renderer");
 
-      if (renderingInfo == null) {
-        logger.info("add sprite rendering info");
-        entity.addComponent(new SpriteRenderingInfo());
+        logger.info("check if is dirty");
+
+        if (spriteComponent.isDirty()) {
+          SpriteRenderer spriteRenderer = spriteRenderers.get(spriteComponent.getSpriteRendererIndex());
+          spriteRenderer.updateSpriteComponent(spriteComponent);
+        }
+      } else {
+
+        logger.info("register sprite component");
 
         boolean added = false;
-        for (SpriteRenderer spriteRenderer : spriteRenderers) {
-          if (spriteRenderer.addSpriteComponent(spriteComponent)) {
+        for (int i = 0; i < spriteRenderers.size(); i++) {
+          if (spriteRenderers.get(i).addSpriteComponent(spriteComponent)) {
             added = true;
+            spriteComponent.setSpriteRendererIndex(i);
             break;
           }
         }
 
         if (!added) {
           SpriteRenderer freshRenderer = new SpriteRenderer();
-          freshRenderer.addSpriteComponent(spriteComponent);
+          added = freshRenderer.addSpriteComponent(spriteComponent);
           spriteRenderers.add(freshRenderer);
+          spriteComponent.setSpriteRendererIndex(spriteRenderers.size() - 1);
         }
 
-      } else {
-        logger.info("sprite rendering info already present");
-
+        logger.info("sprite component added {}", added);
       }
     }
       /*
@@ -82,5 +89,8 @@ public class RenderSystem implements System {
   @Override
   public void render(List<Entity> entities) {
     System.super.render(entities);
+    for (SpriteRenderer spriteRenderer : spriteRenderers) {
+      spriteRenderer.render();
+    }
   }
 }
