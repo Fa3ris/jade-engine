@@ -3,6 +3,7 @@ package org.jade.render.pool;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.jade.render.Sprite;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ public class ResourcePool {
   private final Map<Integer, Shader> shaders = new HashMap<>();
 
   private final Map<Integer, Texture> textures = new HashMap<>();
+
+  private final Map<Integer, Sprite> sprites = new HashMap<>();
 
   private static final Logger logger = LoggerFactory.getLogger(ResourcePool.class);
 
@@ -53,6 +56,23 @@ public class ResourcePool {
     texture = new Texture(path);
     textures.put(hash, texture);
     return texture;
+  }
+
+  public Sprite getSprite(String path) {
+
+    int hash = path.hashCode();
+
+    Sprite sprite = sprites.get(hash);
+
+    if (sprite != null) {
+       return sprite;
+    }
+
+    Texture texture = getTexture(path);
+    sprite = new Sprite(texture);
+    sprites.put(hash, sprite);
+
+    return sprite;
   }
 
   public void clearTextures() {
