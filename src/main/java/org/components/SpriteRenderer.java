@@ -62,6 +62,10 @@ public class SpriteRenderer extends Component {
 
   private Shader shader;
 
+  private boolean isVBOFull;
+
+  private boolean isTexturesFull;
+
   public void setShader(Shader shader) {
     this.shader = shader;
     shader.use();
@@ -229,7 +233,76 @@ public class SpriteRenderer extends Component {
   }
 
   public boolean addSpriteComponent(SpriteComponent spriteComponent) {
+    if (isVBOFull) {
+      return false;
+    }
 
-    return false;
+    Texture texture = spriteComponent.getTexture();
+
+    boolean verticesAdded = false;
+    boolean texturePresent = false;
+    for (int i = 0; i < totalTextures; i++) {
+      if (texturesArr[i].equals(texture)) {
+
+        spriteComponent.setTextureUnit(i);
+        texturePresent = true;
+        spriteComponent.setQuadIndex(totalSprites);
+        addVertices(spriteComponent.getVertices());
+        verticesAdded = true;
+      }
+    }
+
+    if (!texturePresent && totalTextures < texturesArr.length) {
+        texturesArr[totalTextures] = texture;
+        spriteComponent.setTextureUnit(totalTextures);
+        ++totalTextures;
+        spriteComponent.setQuadIndex(totalSprites);
+        addVertices(spriteComponent.getVertices());
+        verticesAdded = true;
+    }
+
+    return verticesAdded;
+  }
+
+  private void addVertices(float[] vertices) {
+
+    // update sub-region of the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+
+    bufferVBOSubData(vertices, totalSprites);
+
+
+    // clock-wise
+    // 0 1 3 - 1 2 3
+
+    // add offset of 4 vertices for the indices
+
+    // 4 5 7 - 5 6 7
+    // 8 9 11  9 10 11
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+
+    try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
+      final int valueOffset = totalSprites * VERTICES_PER_QUAD;
+      IntBuffer indicesBuffer =
+          stackMallocInt(6)
+              .put(valueOffset)
+              .put(valueOffset + 1)
+              .put(valueOffset + 3)
+              .put(valueOffset + 1)
+              .put(valueOffset + 2)
+              .put(valueOffset + 3)
+              .flip();
+      glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
+          (long) totalSprites * INDICES_PER_QUAD * Float.BYTES,
+          indicesBuffer);
+
+    }
+
+    ++totalSprites;
+  }
+
+  public void updateSpriteComponent(SpriteComponent spriteComponent) {
+    logger.info("update sprite component at index {}", spriteComponent.getQuadIndex());
+    bufferVBOSubData(spriteComponent.getVertices(), spriteComponent.getQuadIndex());
   }
 }

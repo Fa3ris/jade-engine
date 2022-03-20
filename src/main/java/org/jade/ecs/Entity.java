@@ -3,9 +3,12 @@ package org.jade.ecs;
 import java.util.HashMap;
 import java.util.Map;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Entity {
 
+  private static final Logger logger = LoggerFactory.getLogger(Entity.class);
   // which renderer has the correct texture of the sprite ?
   int spriteRendererId = -1;
 
@@ -50,6 +53,7 @@ public class Entity {
 
   // pbl can have only 1 component of a given type
   public void addComponent(Component c) {
+    logger.info("add component {}", c.getClass().getName());
     components.put(c.getClass().getName(), c);
     c.entity = this;
   }

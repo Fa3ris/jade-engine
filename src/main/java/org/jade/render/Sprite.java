@@ -22,6 +22,22 @@ public class Sprite extends Component {
 
   private boolean dirty = false;
 
+  public float getTopCoord() {
+    return topCoord;
+  }
+
+  public float getLeftCoord() {
+    return leftCoord;
+  }
+
+  public float getRightCoord() {
+    return rightCoord;
+  }
+
+  public float getBottomCoord() {
+    return bottomCoord;
+  }
+
   public Sprite() {
 
     // default values
@@ -98,5 +114,9 @@ public class Sprite extends Component {
 
   public boolean isDirty() {
     return dirty;
+  }
+
+  public Texture getTexture() {
+    return texture;
   }
 }
