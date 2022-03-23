@@ -3,7 +3,9 @@ package org.components;
 import org.jade.ecs.Component;
 import org.jade.render.Sprite;
 import org.jade.render.texture.Texture;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class SpriteComponent extends Component {
 
@@ -29,7 +31,34 @@ public class SpriteComponent extends Component {
     bottomPos = -.5f;
   }
 
-  Vector3f[] positions = new Vector3f[4];
+  Vector3f topLeft = new Vector3f(-.5f, .5f, 0);
+  Vector4f defaultTopLeft = new Vector4f(-.5f, .5f, 0, 1);
+  Vector3f topRight = new Vector3f(.5f, .5f, 0);
+  Vector4f defaultTopRight = new Vector4f(.5f, .5f, 0, 1);
+  Vector3f bottomLeft = new Vector3f(-.5f, -.5f, 0);
+  Vector4f defaultBottomLeft = new Vector4f(-.5f, -.5f, 0, 1);
+  Vector3f bottomRight = new Vector3f(.5f, -.5f, 0);
+  Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
+
+  public void transform(Matrix4f mat) {
+    Vector4f v = new Vector4f();
+    mat.transform(defaultTopLeft, v);
+    topLeft.x = v.x;
+    topLeft.y = v.y;
+
+    mat.transform(defaultTopRight, v);
+    topRight.x = v.x;
+    topRight.y = v.y;
+
+    mat.transform(defaultBottomLeft, v);
+    bottomLeft.x = v.x;
+    bottomLeft.y = v.y;
+
+    mat.transform(defaultBottomRight, v);
+    bottomRight.x = v.x;
+    bottomRight.y = v.y;
+
+  }
 
   public void setDirty() {
     isDirty = true;
@@ -47,10 +76,10 @@ public class SpriteComponent extends Component {
     // see if z-position useful
     return new float[] {
         // position                   texCoord                 texId
-        leftPos,  topPos,    0.0f, sprite.getLeftCoord(),  sprite.getTopCoord(),    textureUnit, // left top
-        rightPos, topPos,    0.0f, sprite.getRightCoord(), sprite.getTopCoord(),    textureUnit, // right top
-        rightPos, bottomPos, 0.0f, sprite.getRightCoord(), sprite.getBottomCoord(), textureUnit, // right bottom
-        leftPos,  bottomPos, 0.0f, sprite.getLeftCoord(),  sprite.getBottomCoord(), textureUnit // left bottom
+        topLeft.x,  topLeft.y,    0.0f, sprite.getLeftCoord(),  sprite.getTopCoord(),    textureUnit, // left top
+        topRight.x, topRight.y,    0.0f, sprite.getRightCoord(), sprite.getTopCoord(),    textureUnit, // right top
+        bottomRight.x, bottomRight.y, 0.0f, sprite.getRightCoord(), sprite.getBottomCoord(), textureUnit, // right bottom
+        bottomLeft.x,  bottomLeft.y, 0.0f, sprite.getLeftCoord(),  sprite.getBottomCoord(), textureUnit // left bottom
     };
   }
 
@@ -60,10 +89,6 @@ public class SpriteComponent extends Component {
     bottomPos = bottom;
     rightPos = right;
   }
-
-
-
-
 
 
   @Override
