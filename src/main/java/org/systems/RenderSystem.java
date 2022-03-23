@@ -44,8 +44,10 @@ public class RenderSystem implements System {
         logger.info("check if is dirty");
 
         if (spriteComponent.isDirty()) {
+          logger.error("sprite component is dirty");
           SpriteRenderer spriteRenderer = spriteRenderers.get(spriteComponent.getSpriteRendererIndex());
           spriteRenderer.updateSpriteComponent(spriteComponent);
+          spriteComponent.clean();
         }
       } else {
 

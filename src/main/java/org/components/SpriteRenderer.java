@@ -150,6 +150,7 @@ public class SpriteRenderer extends Component {
   }
 
   private void bufferVBOSubData(float[] vertices, int index) {
+    logger.info("buffer sub data at index {}, vertices are {}", index, vertices);
     try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
       FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
       logger.debug("buffering {} floats", vertices.length);
@@ -325,6 +326,8 @@ public class SpriteRenderer extends Component {
 
   public void updateSpriteComponent(SpriteComponent spriteComponent) {
     logger.info("update sprite component at index {}", spriteComponent.getQuadIndex());
+    // update sub-region of the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
     bufferVBOSubData(spriteComponent.getVertices(), spriteComponent.getQuadIndex());
   }
 }

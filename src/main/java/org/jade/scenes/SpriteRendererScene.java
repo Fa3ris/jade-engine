@@ -21,6 +21,8 @@ public class SpriteRendererScene extends AbstractScene {
 
   ECS ecs;
 
+  SpriteComponent spriteComponent;
+
   @Override
   public void load() {
 
@@ -31,7 +33,9 @@ public class SpriteRendererScene extends AbstractScene {
 
     Entity dummy = new Entity();
 
-    dummy.addComponent(new SpriteComponent(pool.getSprite("textures/wall.jpg")));
+    spriteComponent = new SpriteComponent(pool.getSprite("textures/wall.jpg"));
+
+    dummy.addComponent(spriteComponent);
 
     ecs.addEntity(dummy);
     Texture wallTexture = pool.getTexture("textures/wall.jpg");
@@ -80,6 +84,10 @@ public class SpriteRendererScene extends AbstractScene {
   public void unload() {
   }
 
+  double elapsed;
+  double waitTime = 1;
+
+  int pos = 1;
 
   @Override
   public void update(double dt) {
@@ -87,6 +95,23 @@ public class SpriteRendererScene extends AbstractScene {
     logger.info("update sprite renderer scene");
     entity.update(dt);
     spriteRenderer.update(dt);
+
+    elapsed += dt;
+    if (elapsed > waitTime) {
+
+      elapsed = -waitTime;
+
+      if (pos == 1) {
+        spriteComponent.setPos(.5f, -.5f, -.5f, .5f);
+        pos = 2;
+      } else {
+        pos = 1;
+        float delta = .5f;
+        spriteComponent.setPos(.5f + delta, -.5f + delta, -.5f + delta, .5f + delta);
+      }
+      logger.info("changed to position {}", pos);
+      spriteComponent.setDirty();
+    }
     ecs.update(dt);
   }
 
