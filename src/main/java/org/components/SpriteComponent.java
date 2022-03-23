@@ -19,6 +19,16 @@ public class SpriteComponent extends Component {
 
   boolean isDirty;
 
+  public SpriteComponent(Sprite sprite) {
+    this.sprite = sprite;
+
+    topPos = .5f;
+    leftPos = -.5f;
+
+    rightPos = .5f;
+    bottomPos = -.5f;
+  }
+
   Vector3f[] positions = new Vector3f[4];
 
   public void setDirty() {
@@ -53,15 +63,7 @@ public class SpriteComponent extends Component {
 
 
 
-  public SpriteComponent(Sprite sprite) {
-    this.sprite = sprite;
 
-    topPos = .5f;
-    leftPos = -.5f;
-
-    rightPos = .5f;
-    bottomPos = -.5f;
-  }
 
 
   @Override
