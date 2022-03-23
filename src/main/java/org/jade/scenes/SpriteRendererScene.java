@@ -35,7 +35,14 @@ public class SpriteRendererScene extends AbstractScene {
 
     Entity dummy = new Entity();
 
-    spriteComponent = new SpriteComponent(pool.getSprite("textures/wall.jpg"));
+    Sprite sheet = pool.getSprite("textures/spritesheet.png");
+
+    float topCoord = 1;
+    float bottomCoord = .50f;
+
+    float leftCoord = 0;
+    float rightCoord = .07f;
+    spriteComponent = new SpriteComponent(sheet.subSprite(topCoord, leftCoord, rightCoord, bottomCoord));
 
     dummy.addComponent(spriteComponent);
 

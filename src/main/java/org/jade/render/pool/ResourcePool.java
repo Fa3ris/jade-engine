@@ -70,6 +70,7 @@ public class ResourcePool {
 
     Texture texture = getTexture(path);
     sprite = new Sprite(texture);
+    sprite.load(true, true);
     sprites.put(hash, sprite);
 
     return sprite;

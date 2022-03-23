@@ -41,6 +41,17 @@ public class Sprite extends Component {
     return bottomCoord;
   }
 
+  public Sprite subSprite(float top, float left, float right, float bottom) {
+    Sprite s = new Sprite(texture);
+
+    s.topCoord = top;
+    s.leftCoord = left;
+    s.bottomCoord = bottom;
+    s.rightCoord = right;
+
+    return s;
+  }
+
   public Sprite() {
 
     // default values
@@ -127,5 +138,13 @@ public class Sprite extends Component {
 
   public Texture getTexture() {
     return texture;
+  }
+
+  public void load(boolean flipVertically) {
+    texture.load(flipVertically, false);
+  }
+
+  public void load(boolean flipVertically, boolean pixelate) {
+    texture.load(flipVertically, pixelate);
   }
 }

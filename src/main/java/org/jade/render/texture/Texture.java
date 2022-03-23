@@ -51,12 +51,15 @@ public class Texture {
 
   final private String path;
 
+  private boolean loaded;
+
   public Texture(String path) {
     this.path = path;
     id = glGenTextures();
   }
 
   public void load(boolean flipVertically, boolean pixelate) {
+    if (loaded) {return;}
     try {
       URL url = Thread.currentThread().getContextClassLoader().getResource(path);
       FileChannel fc = FileChannel.open(Paths.get(url.toURI()));
@@ -114,6 +117,7 @@ public class Texture {
       stbi_image_free(data);
 
       logger.trace("data is {}", data);
+      loaded = true;
     } catch (Exception e) {
       logger.error("error getting texture data", e);
     }
