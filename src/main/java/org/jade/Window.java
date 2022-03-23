@@ -123,6 +123,9 @@ public class Window {
 
     sceneManager = SceneManagerFactory.createInstance();
 
+    sceneManager.updateCamera(camera);
+    sceneManager.setFOV(fovInDegrees);
+
   }
 
   private void init() {
