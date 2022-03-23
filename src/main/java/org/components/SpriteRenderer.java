@@ -1,5 +1,6 @@
 package org.components;
 
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
@@ -26,6 +27,8 @@ import org.jade.ecs.Component;
 import org.jade.render.Sprite;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +74,16 @@ public class SpriteRenderer extends Component {
     shader.use();
     // upload uniform variable
     shader.setUniform1iv("textures", new int[] {0, 1, 2, 3, 4, 5, 6, 7});
+
+    // TODO each sprite component should have its own model transformation
+    // TODO set a general projection and view transformations
+    Matrix4f rotation = new Matrix4f();
+    Vector3f rotationAxis = new Vector3f(.5f, 1f, 0f);
+    rotationAxis = new Vector3f(0f, 0f, 1f);
+    int rotationOffset = 0;
+    rotation.rotate((float) (glfwGetTime() * Math.toRadians(50f) + rotationOffset), rotationAxis);
+
+    shader.setUniformMatrix4fv("model", rotation);
   }
 
   @Deprecated
