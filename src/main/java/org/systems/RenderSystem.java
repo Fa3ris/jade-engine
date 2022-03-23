@@ -7,6 +7,7 @@ import org.components.SpriteRenderer;
 import org.components.SpriteRenderingInfo;
 import org.jade.ecs.Entity;
 import org.jade.ecs.System;
+import org.jade.render.pool.ResourcePool;
 import org.jade.scenes.SceneManager;
 import org.lwjgl.system.CallbackI.S;
 import org.slf4j.Logger;
@@ -17,6 +18,12 @@ public class RenderSystem implements System {
   List<SpriteRenderer> spriteRenderers = new ArrayList<>(5);
 
   private static final Logger logger = LoggerFactory.getLogger(RenderSystem.class);
+
+  private ResourcePool pool;
+
+  public void setPool(ResourcePool pool) {
+    this.pool = pool;
+  }
 
   @Override
   public void update(double dt, List<Entity> entities) {
@@ -55,6 +62,11 @@ public class RenderSystem implements System {
 
         if (!added) {
           SpriteRenderer freshRenderer = new SpriteRenderer();
+          // position textCoord texUnit
+          freshRenderer.setVertexAttributeSizes(new int[]{3, 2, 1});
+          freshRenderer.setShader(pool.getShader("shaders/textured-renderer/vertexShader.glsl",
+              "shaders/textured-renderer/fragmentShader.glsl"));
+          freshRenderer.start();
           added = freshRenderer.addSpriteComponent(spriteComponent);
           spriteRenderers.add(freshRenderer);
           spriteComponent.setSpriteRendererIndex(spriteRenderers.size() - 1);
@@ -88,7 +100,6 @@ public class RenderSystem implements System {
 
   @Override
   public void render(List<Entity> entities) {
-    System.super.render(entities);
     for (SpriteRenderer spriteRenderer : spriteRenderers) {
       spriteRenderer.render();
     }

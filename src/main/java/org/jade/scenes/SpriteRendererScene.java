@@ -25,8 +25,9 @@ public class SpriteRendererScene extends AbstractScene {
   public void load() {
 
     ecs = new ECS();
-
-    ecs.addSystem(new RenderSystem());
+    RenderSystem renderSystem = new RenderSystem();
+    renderSystem.setPool(pool);
+    ecs.addSystem(renderSystem);
 
     Entity dummy = new Entity();
 
@@ -91,7 +92,9 @@ public class SpriteRendererScene extends AbstractScene {
 
   @Override
   public void render() {
-    spriteRenderer.render();
+    if (false) {
+      spriteRenderer.render();
+    }
     ecs.render();
   }
 }
