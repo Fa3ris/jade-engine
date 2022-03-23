@@ -137,4 +137,8 @@ public class Texture {
   public void delete() {
     glDeleteTextures(id);
   }
+
+  public String getName() {
+    return path;
+  }
 }

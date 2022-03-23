@@ -62,7 +62,7 @@ public class SpriteRenderer extends Component {
 
   private Shader shader;
 
-  private boolean isVBOFull;
+  private boolean isSpritesFull;
 
   private boolean isTexturesFull;
 
@@ -73,13 +73,15 @@ public class SpriteRenderer extends Component {
     shader.setUniform1iv("textures", new int[] {0, 1, 2, 3, 4, 5, 6, 7});
   }
 
+  @Deprecated
   public void addTexture(Texture texture) {
-    if (totalTextures >= texturesArr.length) {
+    if (isTexturesFull) {
       logger.warn("textures are full");
       return;
     }
     texturesArr[totalTextures] = texture;
     ++totalTextures;
+    isTexturesFull = totalTextures >= texturesArr.length;
   }
 
   public void setVertexAttributeSizes(int[] sizes) {
@@ -133,6 +135,7 @@ public class SpriteRenderer extends Component {
   }
 
   @Override
+  @Deprecated
   public void update(double dt) {
     logger.info("{} updating", SpriteRenderer.class);
 
@@ -149,6 +152,7 @@ public class SpriteRenderer extends Component {
   private void bufferVBOSubData(float[] vertices, int index) {
     try (MemoryStack ignored = stackPush()) { // pop called automatically via AutoCloseable
       FloatBuffer vertexBuffer = stackMallocFloat(VERTICES_PER_QUAD * vertexTotalSize);
+      logger.debug("buffering {} floats", vertices.length);
       vertexBuffer.put(vertices).flip();
       glBufferSubData(GL_ARRAY_BUFFER,
           (long) index * VERTICES_PER_QUAD * vertexTotalSizeInBytes,
@@ -166,8 +170,9 @@ public class SpriteRenderer extends Component {
        if changed
          find the place where sprite is stored and index in VBO and rebuffer data for this segment
     */
+  @Deprecated
   public void addSprite(Sprite sprite) {
-    if (totalSprites >= spritesArr.length) {
+    if (isSpritesFull) {
       logger.warn("sprites full");
       return;
     }
@@ -204,6 +209,7 @@ public class SpriteRenderer extends Component {
 
     spritesArr[totalSprites] = sprite;
     ++totalSprites;
+    isSpritesFull = totalSprites >= spritesArr.length;
   }
 
   public void render() {
@@ -221,6 +227,8 @@ public class SpriteRenderer extends Component {
         // ...
         texturesArr[i].use(GL_TEXTURE0 + i);
       }
+    } else {
+      logger.error("no shader present !!! {}", this);
     }
 
     glBindVertexArray(vaoID);
@@ -233,33 +241,50 @@ public class SpriteRenderer extends Component {
   }
 
   public boolean addSpriteComponent(SpriteComponent spriteComponent) {
-    if (isVBOFull) {
+    if (isSpritesFull) {
+      logger.error("sprites are full - there are {} sprites", totalSprites);
       return false;
     }
 
     Texture texture = spriteComponent.getTexture();
+    logger.info("register texture {}", texture.getName());
 
     boolean verticesAdded = false;
     boolean texturePresent = false;
     for (int i = 0; i < totalTextures; i++) {
       if (texturesArr[i].equals(texture)) {
 
+        logger.info("texture {} is present at index {}", texture.getName(), i);
         spriteComponent.setTextureUnit(i);
         texturePresent = true;
+        logger.info("set quad index to {}", totalSprites);
         spriteComponent.setQuadIndex(totalSprites);
         addVertices(spriteComponent.getVertices());
+        ++totalSprites;
+        isSpritesFull = totalSprites >= spritesArr.length;
         verticesAdded = true;
       }
     }
 
-    if (!texturePresent && totalTextures < texturesArr.length) {
+    if (!texturePresent && !isTexturesFull) {
+        logger.info("texture {} is not present - add at index {}", texture.getName(), totalTextures);
         texturesArr[totalTextures] = texture;
         spriteComponent.setTextureUnit(totalTextures);
         ++totalTextures;
+        isTexturesFull = totalTextures >= texturesArr.length;
+        logger.info("set quad index to {}", totalSprites);
         spriteComponent.setQuadIndex(totalSprites);
         addVertices(spriteComponent.getVertices());
+        ++totalSprites;
+        isSpritesFull = totalSprites >= spritesArr.length;
         verticesAdded = true;
+    } else {
+      logger.error("texture {} is not present but there is no more space - there are {} textures",
+          texture.getName(), totalTextures);
     }
+
+    logger.info("vertices added {}, there are {} sprites and {} textures",
+        verticesAdded, totalSprites, totalTextures);
 
     return verticesAdded;
   }
@@ -270,7 +295,6 @@ public class SpriteRenderer extends Component {
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
     bufferVBOSubData(vertices, totalSprites);
-
 
     // clock-wise
     // 0 1 3 - 1 2 3
@@ -297,8 +321,6 @@ public class SpriteRenderer extends Component {
           indicesBuffer);
 
     }
-
-    ++totalSprites;
   }
 
   public void updateSpriteComponent(SpriteComponent spriteComponent) {
