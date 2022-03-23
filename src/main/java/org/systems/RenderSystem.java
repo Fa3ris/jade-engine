@@ -39,9 +39,9 @@ public class RenderSystem implements System {
       logger.info("found sprite component");
 
       if (spriteComponent.getSpriteRendererIndex() >= 0) {
-        logger.info("already assigned to sprite renderer");
+        logger.info("sprite component already assigned to sprite renderer {}", spriteComponent.getSpriteRendererIndex());
 
-        logger.info("check if is dirty");
+        logger.info("sprite component check if is dirty");
 
         if (spriteComponent.isDirty()) {
           logger.error("sprite component is dirty");

@@ -107,6 +107,9 @@ public class Shader {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       FloatBuffer buffer = mat.get(stack.mallocFloat(16));
       int uniformLocation = GL30.glGetUniformLocation(programID, name);
+      if (uniformLocation == -1) {
+        logger.error("{} is not a valid uniform name", name);
+      }
       GL30.glUniformMatrix4fv(uniformLocation, false, buffer);
     }
   }
