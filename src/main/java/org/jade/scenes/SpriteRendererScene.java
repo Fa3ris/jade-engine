@@ -5,6 +5,7 @@ import org.components.SpriteRenderer;
 import org.jade.ecs.ECS;
 import org.jade.ecs.Entity;
 import org.jade.render.Sprite;
+import org.jade.render.camera.Camera;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
 import org.joml.Matrix4f;
@@ -78,6 +79,17 @@ public class SpriteRendererScene extends AbstractScene {
     entity.addComponent(aWall);
 
     spriteRenderer.addSprite(aWall);
+  }
+
+
+  @Override
+  public void setCamera(Camera camera) {
+      ecs.setCamera(camera);
+  }
+
+  @Override
+  public void setFOV(double angleDegree) {
+      ecs.setFOV(angleDegree);
   }
 
 

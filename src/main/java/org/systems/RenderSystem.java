@@ -7,6 +7,7 @@ import org.components.SpriteRenderer;
 import org.components.SpriteRenderingInfo;
 import org.jade.ecs.Entity;
 import org.jade.ecs.System;
+import org.jade.render.camera.Camera;
 import org.jade.render.pool.ResourcePool;
 import org.jade.scenes.SceneManager;
 import org.lwjgl.system.CallbackI.S;
@@ -66,8 +67,8 @@ public class RenderSystem implements System {
           SpriteRenderer freshRenderer = new SpriteRenderer();
           // position textCoord texUnit
           freshRenderer.setVertexAttributeSizes(new int[]{3, 2, 1});
-          freshRenderer.setShader(pool.getShader("shaders/textured-renderer/vertexShader.glsl",
-              "shaders/textured-renderer/fragmentShader.glsl"));
+          freshRenderer.setShader(pool.getShader("shaders/ecs/vertexShader.glsl",
+              "shaders/ecs/fragmentShader.glsl"));
           freshRenderer.start();
           added = freshRenderer.addSpriteComponent(spriteComponent);
           spriteRenderers.add(freshRenderer);
@@ -104,6 +105,18 @@ public class RenderSystem implements System {
   public void render(List<Entity> entities) {
     for (SpriteRenderer spriteRenderer : spriteRenderers) {
       spriteRenderer.render();
+    }
+  }
+
+  public void setCamera(Camera camera) {
+    for (SpriteRenderer spriteRenderer : spriteRenderers) {
+      spriteRenderer.setCamera(camera);
+    }
+  }
+
+  public void setFOV(double angleDegree) {
+    for (SpriteRenderer spriteRenderer : spriteRenderers) {
+      spriteRenderer.setFOV(angleDegree);
     }
   }
 }

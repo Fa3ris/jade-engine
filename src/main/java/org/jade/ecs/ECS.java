@@ -2,6 +2,8 @@ package org.jade.ecs;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.jade.render.camera.Camera;
+import org.systems.RenderSystem;
 
 /*
        ECS
@@ -53,6 +55,9 @@ public class ECS {
 
   private final List<Entity> entities = new ArrayList<>();
 
+  /**
+   *
+   */
   private final List<System> systems = new ArrayList<>();
 
   public boolean addEntity(Entity entity) {
@@ -90,4 +95,21 @@ public class ECS {
     }
   }
 
+  public void setCamera(Camera camera) {
+    for (System system : systems) {
+      if (system instanceof RenderSystem) {
+        RenderSystem renderSystem = (RenderSystem) system;
+        renderSystem.setCamera(camera);
+      }
+    }
+  }
+
+  public void setFOV(double angleDegree) {
+    for (System system : systems) {
+      if (system instanceof RenderSystem) {
+        RenderSystem renderSystem = (RenderSystem) system;
+        renderSystem.setFOV(angleDegree);
+      }
+    }
+  }
 }

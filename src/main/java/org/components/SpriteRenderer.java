@@ -25,6 +25,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.jade.ecs.Component;
 import org.jade.render.Sprite;
+import org.jade.render.camera.Camera;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
 import org.joml.Matrix4f;
@@ -33,7 +34,6 @@ import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: make it a System or used by System to draw a batch of sprites
 public class SpriteRenderer extends Component {
 
   private final static Logger logger = LoggerFactory.getLogger(SpriteRenderer.class);
@@ -84,6 +84,25 @@ public class SpriteRenderer extends Component {
     rotation.rotate((float) (glfwGetTime() * Math.toRadians(50f) + rotationOffset), rotationAxis);
 
     shader.setUniformMatrix4fv("model", rotation);
+
+    setFOV(45);
+    setCamera(new Camera());
+  }
+
+  public void setFOV(double angleDegree) {
+    Matrix4f projection = new Matrix4f()
+        .perspective(
+            (float) Math.toRadians(angleDegree), // field of view
+            800f/600f, // aspect ratio
+            0.1f, // near plane
+            100f, // far plane
+            false); // z axis in range 0:1 of -1:1
+
+    shader.setUniformMatrix4fv("projection", projection);
+  }
+
+  public void setCamera(Camera camera) {
+    shader.setUniformMatrix4fv("view", camera.getLookAt());
   }
 
   @Deprecated
