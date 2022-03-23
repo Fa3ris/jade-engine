@@ -1,16 +1,20 @@
 package org.systems;
 
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_ONE;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.components.SpriteComponent;
 import org.components.SpriteRenderer;
-import org.components.SpriteRenderingInfo;
 import org.jade.ecs.Entity;
 import org.jade.ecs.System;
 import org.jade.render.camera.Camera;
 import org.jade.render.pool.ResourcePool;
-import org.jade.scenes.SceneManager;
-import org.lwjgl.system.CallbackI.S;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,9 +107,15 @@ public class RenderSystem implements System {
 
   @Override
   public void render(List<Entity> entities) {
+    glEnable(GL_BLEND);
+    glBlendFunc(
+        GL_ONE, // source alpha = what will be drawn
+        GL_ONE_MINUS_SRC_ALPHA // destination alpha = what is already drawn
+    );
     for (SpriteRenderer spriteRenderer : spriteRenderers) {
       spriteRenderer.render();
     }
+    glDisable(GL_BLEND);
   }
 
   public void setCamera(Camera camera) {
