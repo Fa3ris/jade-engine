@@ -7,6 +7,7 @@ import org.jade.ecs.Entity;
 import org.jade.render.Sprite;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
+import org.joml.Matrix4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.systems.RenderSystem;
@@ -102,12 +103,12 @@ public class SpriteRendererScene extends AbstractScene {
       elapsed = -waitTime;
 
       if (pos == 1) {
-        spriteComponent.setPos(.5f, -.5f, -.5f, .5f);
+        spriteComponent.transform(new Matrix4f());
         pos = 2;
       } else {
         pos = 1;
         float delta = .5f;
-        spriteComponent.setPos(.5f + delta, -.5f + delta, -.5f + delta, .5f + delta);
+        spriteComponent.transform(new Matrix4f().translate(delta, delta, 0));
       }
       logger.info("changed to position {}", pos);
       spriteComponent.setDirty();
