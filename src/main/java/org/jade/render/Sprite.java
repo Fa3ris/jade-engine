@@ -16,10 +16,13 @@ public class Sprite extends Component {
   private float topCoord, leftCoord, rightCoord, bottomCoord;
 
   // TODO extract to other component - unrelated to the sprite itself
+  @Deprecated
   private float topPos, leftPos, rightPos, bottomPos;
 
+  @Deprecated
   private float texId;
 
+  @Deprecated
   private boolean dirty = false;
 
   public float getTopCoord() {
@@ -65,6 +68,7 @@ public class Sprite extends Component {
   private final double switchTime = 1f; // in seconds
 
   @Override
+  @Deprecated
   public void update(double dt) {
     logger.info("update sprite !!!!");
     elapsed += dt;
@@ -74,11 +78,13 @@ public class Sprite extends Component {
     }
   }
 
+  @Deprecated
   private void setTexId(float texId) {
     this.texId = texId;
     dirty = true;
   }
 
+  @Deprecated
   public void setPos(float top, float left, float bottom, float right) {
     topPos = top;
     leftPos = left;
@@ -88,6 +94,7 @@ public class Sprite extends Component {
     dirty = true;
   }
 
+  @Deprecated
   public void setTexCoords(float top, float left, float bottom, float right) {
     topCoord = top;
     leftCoord = left;
@@ -98,6 +105,7 @@ public class Sprite extends Component {
   }
 
 
+  @Deprecated
   public float[] getVertices() {
 
     dirty = false; // reset
@@ -112,6 +120,7 @@ public class Sprite extends Component {
     };
   }
 
+  @Deprecated
   public boolean isDirty() {
     return dirty;
   }

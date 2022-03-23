@@ -9,28 +9,6 @@ import org.slf4j.LoggerFactory;
 public class Entity {
 
   private static final Logger logger = LoggerFactory.getLogger(Entity.class);
-  // which renderer has the correct texture of the sprite ?
-  int spriteRendererId = -1;
-
-  // at which index rebuffer the data ?
-  // when create
-  int vboIndex = -1;
-
-  boolean needToRender;
-
-  String spriteName;
-
-  // TODO extract to other component - unrelated to the sprite itself
-  private float topPos, leftPos, rightPos, bottomPos;
-
-
-  Vector3f topLeft() {
-    return new Vector3f();
-  }
-
-  Vector3f bottomRight() {
-    return new Vector3f();
-  }
 
   private final Map<String, Component> components = new HashMap<>();
 
@@ -58,12 +36,14 @@ public class Entity {
     c.entity = this;
   }
 
+  @Deprecated
   public void update(double dt) {
     for (Component component : components.values()) {
       component.update(dt);
     }
   }
 
+  @Deprecated
   public void start() {
     for (Component component : components.values()) {
       component.start();

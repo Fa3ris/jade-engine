@@ -69,11 +69,11 @@ public class SpriteRendererScene extends AbstractScene {
     float bottomPos = -.5f;
     aWall.setPos(topPos, leftPos, bottomPos, rightPos);
 
-    float topCoord = 1;
-    float bottomCoord = 0;
-
-    float leftCoord = 0;
-    float rightCoord = 1;
+//    float topCoord = 1;
+//    float bottomCoord = 0;
+//
+//    float leftCoord = 0;
+//    float rightCoord = 1;
     aWall.setTexCoords(topCoord, leftCoord, bottomCoord, rightCoord);
     aWall.setEntity(entity);
     entity.addComponent(aWall);
