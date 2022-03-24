@@ -19,6 +19,10 @@ public class SpriteSheet {
   public void add(Sprite subSprite) {
     sprites.add(subSprite);
   }
+
+  public void setTotalSprites(int i) {
+    sprites.subList(i, sprites.size()).clear();
+  }
   // coords must be in range [0, 1]
 
   /*

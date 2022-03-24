@@ -42,6 +42,8 @@ public class SpriteRendererScene extends AbstractScene {
     Entity dummy = new Entity();
 
     SpriteSheet spriteSheet = pool.getSpriteSheet("textures/spritesheet.png", 16f, 16f, 0f, 0f);
+
+    spriteSheet.setTotalSprites(26); // remove empty sprites at the end
     Sprite firstSprite = spriteSheet.get(spriteIndex);
     spriteComponent = new SpriteComponent(firstSprite);
 
