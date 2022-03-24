@@ -1,26 +1,23 @@
 package org.jade.render;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.jade.render.texture.Texture;
 
 public class SpriteSheet {
 
-  Texture texture;
+  private final List<Sprite> sprites = new ArrayList<>();
 
-  float sheetWidth, sheetHeight;
-
-  public SpriteSheet(String path) {
-    texture = new Texture(path);
+  public Sprite get(int index) {
+    return sprites.get(index);
   }
 
-  public void load(boolean flipVertically, boolean pixelate) {
-    texture.load(flipVertically, pixelate);
+  public int size() {
+    return sprites.size();
   }
 
-  public Sprite getSprite(int index) {
-    Sprite sprite = new Sprite();
-
-    return sprite;
+  public void add(Sprite subSprite) {
+    sprites.add(subSprite);
   }
   // coords must be in range [0, 1]
 

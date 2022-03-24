@@ -31,6 +31,9 @@ public class SpriteComponent extends Component {
     bottomPos = -.5f;
   }
 
+  /**
+   * TODO clean this mess
+   */
   Vector3f topLeft = new Vector3f(-.5f, .5f, 0);
   Vector4f defaultTopLeft = new Vector4f(-.5f, .5f, 0, 1);
   Vector3f topRight = new Vector3f(.5f, .5f, 0);
@@ -58,6 +61,8 @@ public class SpriteComponent extends Component {
     bottomRight.x = v.x;
     bottomRight.y = v.y;
 
+    setDirty();
+
   }
 
   public void setDirty() {
@@ -83,6 +88,7 @@ public class SpriteComponent extends Component {
     };
   }
 
+  @Deprecated
   public void setPos(float top, float left, float bottom, float right) {
     topPos = top;
     leftPos = left;
@@ -122,5 +128,10 @@ public class SpriteComponent extends Component {
 
   public int getQuadIndex() {
     return quadIndex;
+  }
+
+  public void setSprite(Sprite newSprite) {
+    sprite = newSprite;
+    setDirty();
   }
 }

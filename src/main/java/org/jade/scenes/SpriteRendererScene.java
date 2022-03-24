@@ -5,6 +5,7 @@ import org.components.SpriteRenderer;
 import org.jade.ecs.ECS;
 import org.jade.ecs.Entity;
 import org.jade.render.Sprite;
+import org.jade.render.SpriteSheet;
 import org.jade.render.camera.Camera;
 import org.jade.render.shader.Shader;
 import org.jade.render.texture.Texture;
@@ -35,18 +36,14 @@ public class SpriteRendererScene extends AbstractScene {
 
     Entity dummy = new Entity();
 
-    Sprite sheet = pool.getSprite("textures/spritesheet.png");
-
-    float topCoord = 1;
-    float bottomCoord = .50f;
-
-    float leftCoord = 0;
-    float rightCoord = .07f;
-    spriteComponent = new SpriteComponent(sheet.subSprite(topCoord, leftCoord, rightCoord, bottomCoord));
+    SpriteSheet spriteSheet = pool.getSpriteSheet("textures/spritesheet.png", 16f, 16f, 0f, 0f);
+    Sprite firstSprite = spriteSheet.get(spriteIndex);
+    spriteComponent = new SpriteComponent(firstSprite);
 
     dummy.addComponent(spriteComponent);
 
     ecs.addEntity(dummy);
+
     Texture wallTexture = pool.getTexture("textures/wall.jpg");
     Texture marioTexture = pool.getTexture("textures/mario.png");
     wallTexture.load(false);
@@ -76,11 +73,12 @@ public class SpriteRendererScene extends AbstractScene {
     float bottomPos = -.5f;
     aWall.setPos(topPos, leftPos, bottomPos, rightPos);
 
-//    float topCoord = 1;
-//    float bottomCoord = 0;
-//
-//    float leftCoord = 0;
-//    float rightCoord = 1;
+    float topCoord = 1;
+    float bottomCoord = .50f;
+
+    float leftCoord = 0;
+    float rightCoord = .07f;
+
     aWall.setTexCoords(topCoord, leftCoord, bottomCoord, rightCoord);
     aWall.setEntity(entity);
     entity.addComponent(aWall);
@@ -106,8 +104,11 @@ public class SpriteRendererScene extends AbstractScene {
 
   double elapsed;
   double waitTime = 1;
-
   int pos = 1;
+
+  int spriteIndex = 0;
+  double elapsedSwitchSprite;
+  double switchSpriteTime = .5;
 
   @Override
   public void update(double dt) {
@@ -115,6 +116,21 @@ public class SpriteRendererScene extends AbstractScene {
     logger.info("update sprite renderer scene");
     entity.update(dt);
     spriteRenderer.update(dt);
+
+    elapsedSwitchSprite += dt;
+    if (elapsedSwitchSprite > switchSpriteTime) {
+      elapsedSwitchSprite -= switchSpriteTime;
+
+      SpriteSheet spriteSheet = pool.getSpriteSheet("textures/spritesheet.png", 16f, 16f, 0f, 0f);
+
+      spriteIndex++;
+      if (spriteIndex >= spriteSheet.size()) {
+        spriteIndex = 0;
+      }
+      spriteComponent.setSprite(spriteSheet.get(spriteIndex));
+      logger.info("changed sprite to index {}", spriteIndex);
+      spriteComponent.setDirty();
+    }
 
     elapsed += dt;
     if (elapsed > waitTime) {

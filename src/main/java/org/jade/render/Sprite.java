@@ -147,4 +147,12 @@ public class Sprite extends Component {
   public void load(boolean flipVertically, boolean pixelate) {
     texture.load(flipVertically, pixelate);
   }
+
+  public int getWidth() {
+    return texture.getWidth();
+  }
+
+  public int getHeight() {
+    return texture.getHeight();
+  }
 }
