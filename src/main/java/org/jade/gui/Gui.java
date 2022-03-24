@@ -54,7 +54,7 @@ public class Gui {
     imGuiGl3.init();
   }
 
-  private boolean showText = true;
+
 
   /**
    * uses imgui.ini file to restore saved window state (position, size, collapsed)
@@ -63,19 +63,6 @@ public class Gui {
     logger.info("process gui frame");
     imGuiGlfw.newFrame();
     newFrame();
-
-    // actual logic
-
-    begin("imgui window");
-    if (button("toggle text")) {
-      showText = !showText;
-    }
-
-    if (showText) {
-      text("Hello, Dear IMGui");
-    }
-    // actual logic END
-    end();
 
     if (showDemo)
     ImGui.showDemoWindow();

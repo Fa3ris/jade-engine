@@ -154,4 +154,8 @@ public class SceneManager implements ChangeSceneCallback {
   public void delete() {
     pool.clearTextures();
   }
+
+  public void imGui() {
+    currentScene.imGui();
+  }
 }

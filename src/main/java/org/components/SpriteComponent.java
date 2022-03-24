@@ -1,5 +1,7 @@
 package org.components;
 
+import static imgui.ImGui.text;
+
 import org.jade.ecs.Component;
 import org.jade.render.Sprite;
 import org.jade.render.texture.Texture;
@@ -133,5 +135,11 @@ public class SpriteComponent extends Component {
   public void setSprite(Sprite newSprite) {
     sprite = newSprite;
     setDirty();
+  }
+
+  @Override
+  public void imGui() {
+
+    text("sprite component");
   }
 }

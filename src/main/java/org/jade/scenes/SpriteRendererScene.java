@@ -1,5 +1,10 @@
 package org.jade.scenes;
 
+import static imgui.ImGui.begin;
+import static imgui.ImGui.button;
+import static imgui.ImGui.end;
+import static imgui.ImGui.text;
+
 import org.components.SpriteComponent;
 import org.components.SpriteRenderer;
 import org.jade.ecs.ECS;
@@ -41,6 +46,8 @@ public class SpriteRendererScene extends AbstractScene {
     spriteComponent = new SpriteComponent(firstSprite);
 
     dummy.addComponent(spriteComponent);
+
+    activeEntity = dummy;
 
     ecs.addEntity(dummy);
 
@@ -158,4 +165,27 @@ public class SpriteRendererScene extends AbstractScene {
     }
     ecs.render();
   }
+
+  private boolean showText = true;
+
+  @Override
+  public void imGui() {
+    // actual logic
+
+    begin("Sprite renderer scene imgui window");
+    if (button("toggle text")) {
+      showText = !showText;
+    }
+
+    if (showText) {
+      text("Hello, Dear IMGui");
+    }
+
+    if (activeEntity != null) {
+      activeEntity.imGui();
+    }
+    // actual logic END
+    end();
+  }
+
 }

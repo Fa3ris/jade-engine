@@ -10,4 +10,6 @@ public abstract class Component {
     this.entity = entity;
   }
   public void update(double dt) {}
+
+  public void imGui() {}
 }

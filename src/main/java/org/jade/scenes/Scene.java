@@ -17,4 +17,6 @@ public interface Scene {
   void setPool(ResourcePool pool);
 
   void setChangeSceneCallback(ChangeSceneCallback changeSceneCallback);
+
+  void imGui();
 }

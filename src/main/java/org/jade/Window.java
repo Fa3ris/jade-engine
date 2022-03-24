@@ -331,6 +331,8 @@ public class Window {
 
       gui.process();
 
+      sceneManager.imGui();
+
         /*
         ECS
         Définition générale :

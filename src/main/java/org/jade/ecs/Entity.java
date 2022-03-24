@@ -50,4 +50,9 @@ public class Entity {
     }
   }
 
+  public void imGui() {
+    for (Component component : components.values()) {
+      component.imGui();
+    }
+  }
 }
