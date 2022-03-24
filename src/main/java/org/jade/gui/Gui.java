@@ -25,6 +25,8 @@ public class Gui {
   private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
   private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
+  boolean showDemo = true;
+
   public Gui(long windowHandle) {
 
     logger.info("init gui");
@@ -74,7 +76,11 @@ public class Gui {
     }
     // actual logic END
     end();
+
+    if (showDemo)
+    ImGui.showDemoWindow();
   }
+
 
   public void render() {
     logger.info("render gui frame");

@@ -49,6 +49,8 @@ import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import imgui.ImGui;
+import imgui.ImGuiIO;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import org.jade.debug.DebugCallback;
@@ -347,36 +349,45 @@ public class Window {
       boolean updateCamera = false;
       float cameraSpeed = (float) step; // or can use elapsed = delta time
 
-      if (KeyListener.isKeyPressed(GLFW_KEY_W)) { // camera forward
+      ImGuiIO io = ImGui.getIO();
+
+      boolean guiCaptureMouse = io.getWantCaptureMouse();
+      boolean guiCaptureKeyboard = io.getWantCaptureKeyboard();
+
+
+      logger.info("gui captures mouse {}", guiCaptureMouse);
+      logger.info("gui captures keyboard {}", guiCaptureKeyboard);
+
+      if (KeyListener.isKeyPressed(GLFW_KEY_W) && !guiCaptureKeyboard) { // camera forward
         logger.info("w pressed at {}", cameraSpeed);
         camera.forward();
         updateCamera = true;
       }
 
-      if (KeyListener.isKeyPressed(GLFW_KEY_S)) { // camera backward
+      if (KeyListener.isKeyPressed(GLFW_KEY_S) && !guiCaptureKeyboard) { // camera backward
         logger.info("s pressed at {}", cameraSpeed);
         camera.backward();
         updateCamera = true;
       }
 
-      if (KeyListener.isKeyPressed(GLFW_KEY_A)) { // camera strafe left
+      if (KeyListener.isKeyPressed(GLFW_KEY_A) && !guiCaptureKeyboard) { // camera strafe left
         logger.info("a pressed at {}", cameraSpeed);
         camera.strafeLeft();
         updateCamera = true;
       }
 
-      if (KeyListener.isKeyPressed(GLFW_KEY_D)) { // camera strafe right
+      if (KeyListener.isKeyPressed(GLFW_KEY_D) && !guiCaptureKeyboard) { // camera strafe right
         logger.info("d pressed at {}", cameraSpeed);
         camera.strafeRight();
         updateCamera = true;
       }
 
-      if (KeyListener.isKeyPressed(GLFW_KEY_F)) { // roll left
+      if (KeyListener.isKeyPressed(GLFW_KEY_F) && !guiCaptureKeyboard) { // roll left
         camera.roll(-1);
         updateCamera = true;
       }
 
-      if (KeyListener.isKeyPressed(GLFW_KEY_G)) { // roll right
+      if (KeyListener.isKeyPressed(GLFW_KEY_G) && !guiCaptureKeyboard) { // roll right
         camera.roll(1);
         updateCamera = true;
       }
@@ -389,7 +400,7 @@ public class Window {
         updateCamera = true;
       }
 
-      if (MouseListener.instance.x != MouseListener.instance.prevX && MouseListener.instance.dragging) {
+      if (MouseListener.instance.x != MouseListener.instance.prevX && MouseListener.instance.dragging && !guiCaptureMouse) {
         double xOffset = MouseListener.instance.x - MouseListener.instance.prevX;
         xOffset *= mouseSensitivity;
 
@@ -397,7 +408,7 @@ public class Window {
         camera.yaw(xOffset);
       }
 
-      if (MouseListener.instance.y != MouseListener.instance.prevY && MouseListener.instance.dragging) {
+      if (MouseListener.instance.y != MouseListener.instance.prevY && MouseListener.instance.dragging && !guiCaptureMouse) {
         double yOffset = MouseListener.instance.y - MouseListener.instance.prevY;
         yOffset *= mouseSensitivity;
 
@@ -405,12 +416,12 @@ public class Window {
         updateCamera = true;
       }
 
-      if (updateCamera) {
+      if (updateCamera && !guiCaptureMouse) {
         logger.info("camera look at {}", camera.getLookAt());
         sceneManager.updateCamera(camera);
       }
 
-      if (MouseListener.instance.scrollY != 0) {
+      if (MouseListener.instance.scrollY != 0 && !guiCaptureMouse) {
         fovInDegrees -= MouseListener.instance.scrollY;
         if (fovInDegrees < 1.0f)
           fovInDegrees = 1.0f;
