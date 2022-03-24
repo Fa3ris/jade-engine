@@ -1,10 +1,21 @@
 package org.jade.gui;
 
-import static imgui.ImGui.*;
+import static imgui.ImGui.begin;
+import static imgui.ImGui.button;
+import static imgui.ImGui.createContext;
+import static imgui.ImGui.destroyContext;
+import static imgui.ImGui.end;
+import static imgui.ImGui.getDrawData;
+import static imgui.ImGui.newFrame;
+import static imgui.ImGui.text;
 
+import imgui.ImFontAtlas;
+import imgui.ImFontConfig;
 import imgui.ImGui;
+import imgui.ImGuiIO;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +30,24 @@ public class Gui {
     logger.info("init gui");
 
     createContext();
+
+    /* setup font */
+    final ImGuiIO io = ImGui.getIO();
+    final ImFontConfig fontConfig = new ImFontConfig(); // Natively allocated object, should be explicitly destroyed
+    ImFontAtlas fontAtlas = io.getFonts();
+    fontConfig.setGlyphRanges(fontAtlas.getGlyphRangesDefault());
+    byte[] fontBytes;
+
+    try {
+      fontBytes = getClass().getClassLoader().getResourceAsStream("fonts/segoeui.ttf").readAllBytes();
+    } catch (IOException e) {
+      throw new RuntimeException("cannot load font file", e);
+    }
+
+    fontAtlas.addFontFromMemoryTTF(fontBytes, 16, fontConfig);
+    fontAtlas.build();
+    fontConfig.destroy(); // After all fonts were added we don't need this config more
+    /* setup font END */
     imGuiGlfw.init(windowHandle, true);
     imGuiGl3.init();
   }
