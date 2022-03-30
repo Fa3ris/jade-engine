@@ -6,65 +6,43 @@ import org.jade.ecs.Component;
 import org.jade.render.Sprite;
 import org.jade.render.texture.Texture;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class SpriteComponent extends Component {
 
-  Sprite sprite;
+  private Sprite sprite;
 
-  private float topPos, leftPos, rightPos, bottomPos;
+  private int spriteRendererIndex = -1;
 
-  int spriteRendererIndex = -1;
+  private int quadIndex = -1;
 
-  int quadIndex = -1;
+  private int textureUnit = -1;
 
-  int textureUnit = -1;
+  private boolean isDirty;
 
-  boolean isDirty;
+  private final Vector4f topLeft = new Vector4f(defaultTopLeft);
+  private static final Vector4f defaultTopLeft = new Vector4f(-.5f, .5f, 0, 1);
+
+  private final Vector4f topRight = new Vector4f(defaultTopRight);
+  private static final  Vector4f defaultTopRight = new Vector4f(.5f, .5f, 0, 1);
+
+  private final Vector4f bottomLeft = new Vector4f(defaultBottomLeft);
+  private static final Vector4f defaultBottomLeft = new Vector4f(-.5f, -.5f, 0, 1);
+
+  private final Vector4f bottomRight = new Vector4f(defaultBottomRight);
+  private static final Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
 
   public SpriteComponent(Sprite sprite) {
     this.sprite = sprite;
 
-    topPos = .5f;
-    leftPos = -.5f;
-
-    rightPos = .5f;
-    bottomPos = -.5f;
   }
 
-  /**
-   * TODO clean this mess
-   */
-  Vector3f topLeft = new Vector3f(-.5f, .5f, 0);
-  Vector4f defaultTopLeft = new Vector4f(-.5f, .5f, 0, 1);
-  Vector3f topRight = new Vector3f(.5f, .5f, 0);
-  Vector4f defaultTopRight = new Vector4f(.5f, .5f, 0, 1);
-  Vector3f bottomLeft = new Vector3f(-.5f, -.5f, 0);
-  Vector4f defaultBottomLeft = new Vector4f(-.5f, -.5f, 0, 1);
-  Vector3f bottomRight = new Vector3f(.5f, -.5f, 0);
-  Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
-
   public void transform(Matrix4f mat) {
-    Vector4f v = new Vector4f();
-    mat.transform(defaultTopLeft, v);
-    topLeft.x = v.x;
-    topLeft.y = v.y;
-
-    mat.transform(defaultTopRight, v);
-    topRight.x = v.x;
-    topRight.y = v.y;
-
-    mat.transform(defaultBottomLeft, v);
-    bottomLeft.x = v.x;
-    bottomLeft.y = v.y;
-
-    mat.transform(defaultBottomRight, v);
-    bottomRight.x = v.x;
-    bottomRight.y = v.y;
-
+    mat.transform(defaultTopLeft, topLeft);
+    mat.transform(defaultTopRight, topRight);
+    mat.transform(defaultBottomLeft, bottomLeft);
+    mat.transform(defaultBottomRight, bottomRight);
     setDirty();
-
   }
 
   public void setDirty() {
@@ -88,20 +66,6 @@ public class SpriteComponent extends Component {
         bottomRight.x, bottomRight.y, 0.0f, sprite.getRightCoord(), sprite.getBottomCoord(), textureUnit, // right bottom
         bottomLeft.x,  bottomLeft.y, 0.0f, sprite.getLeftCoord(),  sprite.getBottomCoord(), textureUnit // left bottom
     };
-  }
-
-  @Deprecated
-  public void setPos(float top, float left, float bottom, float right) {
-    topPos = top;
-    leftPos = left;
-    bottomPos = bottom;
-    rightPos = right;
-  }
-
-
-  @Override
-  public void update(double dt) {
-
   }
 
   public int getSpriteRendererIndex() {
