@@ -5,9 +5,9 @@ import static imgui.ImGui.text;
 import imgui.ImGui;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
-import javax.xml.crypto.dsig.Transform;
 import org.jade.ecs.Component;
 import org.jade.render.Sprite;
+import org.jade.render.SpriteSheet;
 import org.jade.render.texture.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -36,9 +36,18 @@ public class SpriteComponent extends Component {
   private final Vector4f bottomRight = new Vector4f(defaultBottomRight);
   private static final Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
 
+  private final SpriteSheet spriteSheet;
+
   public SpriteComponent(Sprite sprite) {
     this.sprite = sprite;
+    this.spriteSheet = null;
+  }
 
+  int spriteIndex = -1;
+  public SpriteComponent(SpriteSheet spriteSheet) {
+    spriteIndex = 0;
+    this.sprite = spriteSheet.get(spriteIndex);
+    this.spriteSheet = spriteSheet;
   }
 
   public void transform(Matrix4f mat) {
@@ -118,6 +127,14 @@ public class SpriteComponent extends Component {
 
     if (ImGui.inputFloat("y translate", yTranslate,  0.01f, 1.0f, "%.3f")) {
       updateTransform = true;
+    }
+
+    if (spriteSheet != null) {
+      int[] value = new int[]{ spriteIndex };
+      if (ImGui.sliderInt("sprite index", value, 0, spriteSheet.size() - 1)) {
+        spriteIndex = value[0];
+        setSprite(spriteSheet.get(spriteIndex));
+      }
     }
 
     if (updateTransform) {
