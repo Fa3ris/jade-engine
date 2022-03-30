@@ -140,23 +140,7 @@ public class SpriteRendererScene extends AbstractScene {
       logger.info("changed sprite to index {}", spriteIndex);
       spriteComponent.setDirty();
     }
-
-    elapsed += dt;
-    if (elapsed > waitTime) {
-
-      elapsed = -waitTime;
-
-      if (pos == 1) {
-        spriteComponent.transform(new Matrix4f());
-        pos = 2;
-      } else {
-        pos = 1;
-        float delta = .5f;
-        spriteComponent.transform(new Matrix4f().translate(delta, delta, 0));
-      }
-      logger.info("changed to position {}", pos);
-      spriteComponent.setDirty();
-    }
+    
     ecs.update(dt);
   }
 

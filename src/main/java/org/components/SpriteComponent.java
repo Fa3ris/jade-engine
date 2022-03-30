@@ -2,6 +2,10 @@ package org.components;
 
 import static imgui.ImGui.text;
 
+import imgui.ImGui;
+import imgui.type.ImFloat;
+import imgui.type.ImInt;
+import javax.xml.crypto.dsig.Transform;
 import org.jade.ecs.Component;
 import org.jade.render.Sprite;
 import org.jade.render.texture.Texture;
@@ -101,9 +105,23 @@ public class SpriteComponent extends Component {
     setDirty();
   }
 
+  private final ImFloat xTranslate = new ImFloat(0);
+  private final ImFloat yTranslate = new ImFloat(0);
+
   @Override
   public void imGui() {
-
     text("sprite component");
+    boolean updateTransform = false;
+    if (ImGui.inputFloat("x translate", xTranslate,  0.01f, 1.0f, "%.3f")) {
+      updateTransform = true;
+    }
+
+    if (ImGui.inputFloat("y translate", yTranslate,  0.01f, 1.0f, "%.3f")) {
+      updateTransform = true;
+    }
+
+    if (updateTransform) {
+      transform(new Matrix4f().translate(xTranslate.get(), yTranslate.get(), 0));
+    }
   }
 }
