@@ -1,11 +1,15 @@
 package org.components;
 
+import static imgui.ImGui.image;
 import static imgui.ImGui.text;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import imgui.ImGui;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
 import org.jade.ecs.Component;
+import org.jade.json.Json;
 import org.jade.render.Sprite;
 import org.jade.render.SpriteSheet;
 import org.jade.render.texture.Texture;
@@ -25,25 +29,30 @@ public class SpriteComponent extends Component {
   private boolean isDirty;
 
   private final Vector4f topLeft = new Vector4f(defaultTopLeft);
-  private static final Vector4f defaultTopLeft = new Vector4f(-.5f, .5f, 0, 1);
+  private transient static final Vector4f defaultTopLeft = new Vector4f(-.5f, .5f, 0, 1);
 
   private final Vector4f topRight = new Vector4f(defaultTopRight);
-  private static final  Vector4f defaultTopRight = new Vector4f(.5f, .5f, 0, 1);
+  private transient static final Vector4f defaultTopRight = new Vector4f(.5f, .5f, 0, 1);
 
   private final Vector4f bottomLeft = new Vector4f(defaultBottomLeft);
-  private static final Vector4f defaultBottomLeft = new Vector4f(-.5f, -.5f, 0, 1);
+  private transient static final Vector4f defaultBottomLeft = new Vector4f(-.5f, -.5f, 0, 1);
 
   private final Vector4f bottomRight = new Vector4f(defaultBottomRight);
-  private static final Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
+  private transient static final Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
 
   private final SpriteSheet spriteSheet;
+
+  private int spriteIndex = -1;
+
+  public SpriteComponent() {
+    spriteSheet = null;
+  }
 
   public SpriteComponent(Sprite sprite) {
     this.sprite = sprite;
     this.spriteSheet = null;
   }
 
-  int spriteIndex = -1;
   public SpriteComponent(SpriteSheet spriteSheet) {
     spriteIndex = 0;
     this.sprite = spriteSheet.get(spriteIndex);
@@ -136,6 +145,8 @@ public class SpriteComponent extends Component {
         setSprite(spriteSheet.get(spriteIndex));
       }
     }
+    ImGui.text("JSON data");
+    ImGui.text(Json.toJson(this));
 
     if (updateTransform) {
       transform(new Matrix4f().translate(xTranslate.get(), yTranslate.get(), 0));

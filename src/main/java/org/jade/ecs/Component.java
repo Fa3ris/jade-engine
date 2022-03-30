@@ -2,7 +2,8 @@ package org.jade.ecs;
 
 public abstract class Component {
 
-  protected Entity entity;
+  // TODO: remove reference to entity
+  protected transient Entity entity;
 
   public void start() {}
 
