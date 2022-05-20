@@ -57,5 +57,12 @@ public class Entity {
     for (Component component : components.values()) {
       component.imGui();
     }
+
+    String json = Json.serializeEntity(this);
+    java.lang.System.out.println(json);
+
+    Entity deserialized = Json.deserializeAsEntity(json);
+    java.lang.System.out.println(deserialized);
+
   }
 }
