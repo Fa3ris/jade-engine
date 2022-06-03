@@ -495,4 +495,12 @@ public class Window {
       logger.error("cannot free error callback");
     }
   }
+
+  public float getHeight() {
+    return h;
+  }
+
+  public float getWidth() {
+    return w;
+  }
 }
