@@ -10,10 +10,6 @@ public class FontRenderer extends Component {
 
   @Override
   public void start() {
-    logger.info("{} starting", FontRenderer.class);
-    if (entity.getComponent(SpriteRenderer.class) != null) {
-      logger.info("{} Found Font Renderer!", FontRenderer.class);
-    }
   }
 
   @Override

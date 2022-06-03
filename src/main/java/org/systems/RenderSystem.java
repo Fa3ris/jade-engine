@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public class RenderSystem implements System {
 
-  List<SpriteRenderer> spriteRenderers = new ArrayList<>(5);
+  private final List<SpriteRenderer> spriteRenderers = new ArrayList<>(5);
 
   private static final Logger logger = LoggerFactory.getLogger(RenderSystem.class);
 

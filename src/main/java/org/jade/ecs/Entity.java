@@ -3,16 +3,19 @@ package org.jade.ecs;
 import imgui.ImGui;
 import java.util.HashMap;
 import java.util.Map;
+import org.jade.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Entity {
+public final class Entity {
 
   private static final Logger logger = LoggerFactory.getLogger(Entity.class);
 
   private final Map<String, Component> components = new HashMap<>();
 
   private String name = "dummy";
+
+  private long id;
 
   // return Optional ?
   public <T extends Component> T getComponent(Class<T> clazz) {
@@ -35,7 +38,6 @@ public class Entity {
   public void addComponent(Component c) {
     logger.info("add component {}", c.getClass().getName());
     components.put(c.getClass().getName(), c);
-    c.entity = this;
   }
 
   @Deprecated

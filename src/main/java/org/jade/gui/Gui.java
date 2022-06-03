@@ -25,7 +25,7 @@ public class Gui {
   private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
   private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
-  boolean showDemo = true;
+  private final boolean showDemo = true;
 
   public Gui(long windowHandle) {
 
