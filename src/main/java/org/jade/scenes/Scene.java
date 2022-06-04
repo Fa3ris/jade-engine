@@ -5,6 +5,14 @@ import org.jade.render.pool.ResourcePool;
 
 public interface Scene {
 
+  /**
+   * commence à setup la scene
+   * occasion de reset à l'état initial
+   *
+   * ex pour effacer tout le texte à afficher
+   */
+  void beginScene();
+
   void update(double dt);
   void render();
 
@@ -19,4 +27,6 @@ public interface Scene {
   void setChangeSceneCallback(ChangeSceneCallback changeSceneCallback);
 
   void imGui();
+
+  void renderText();
 }
