@@ -7,6 +7,7 @@ import static imgui.ImGui.text;
 
 import org.jade.ecs.Entity;
 import org.jade.render.ColoredQuadRenderer;
+import org.jade.render.TextRenderer;
 import org.jade.render.camera.Camera;
 import org.jade.render.pool.ResourcePool;
 
@@ -19,6 +20,15 @@ public abstract class AbstractScene implements Scene {
   protected ResourcePool pool;
 
   protected Entity activeEntity;
+
+  protected final void drawText(String s, float x, float y) {
+    TextRenderer.getInstance().addText(s, x, y);
+  }
+
+  @Override
+  public final void beginScene() {
+    TextRenderer.getInstance().begin();
+  }
 
   @Override
   public void update(double dt) {
@@ -74,5 +84,10 @@ public abstract class AbstractScene implements Scene {
     }
     // actual logic END
     end();
+  }
+
+  @Override
+  public void renderText() {
+    TextRenderer.getInstance().render();
   }
 }

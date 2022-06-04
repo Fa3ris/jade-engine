@@ -6,7 +6,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import java.util.ArrayList;
 import java.util.List;
 import org.jade.KeyListener;
-import org.systems.RenderSystem;
 import org.jade.render.camera.Camera;
 import org.jade.render.pool.ResourcePool;
 import org.slf4j.Logger;
@@ -18,12 +17,9 @@ public class SceneManager implements ChangeSceneCallback {
 
   private Scene currentScene;
 
-  private int currentSceneIndex;
   private final List<Scene> scenes = new ArrayList<>(20);
 
   private final ResourcePool pool = new ResourcePool();
-
-  private RenderSystem renderSystem;
 
   public SceneManager() {}
 
@@ -93,7 +89,6 @@ public class SceneManager implements ChangeSceneCallback {
 
     currentScene.update(dt);
 
-
   }
 
   private void previousScene() {
@@ -110,6 +105,7 @@ public class SceneManager implements ChangeSceneCallback {
 
   public void render() {
     currentScene.render();
+    currentScene.renderText();
   }
 
   public void updateCamera(Camera camera) {
@@ -124,7 +120,6 @@ public class SceneManager implements ChangeSceneCallback {
     if (currentScene != null) {
       currentScene.unload();
     }
-//    currentScene = sceneMap.get(scene);
     if (currentScene == null) {
       createScene(scene);
     }
@@ -148,7 +143,6 @@ public class SceneManager implements ChangeSceneCallback {
         throw new IllegalArgumentException(String.format("unknown scene %s", scene));
     }
     currentScene.setChangeSceneCallback(this);
-//    sceneMap.put(scene, currentScene);
   }
 
   public void delete() {
@@ -157,5 +151,9 @@ public class SceneManager implements ChangeSceneCallback {
 
   public void imGui() {
     currentScene.imGui();
+  }
+
+  public void beginScene() {
+    currentScene.beginScene();
   }
 }

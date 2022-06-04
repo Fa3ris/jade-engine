@@ -269,6 +269,7 @@ public class Window {
         accumulator -= step;
         logger.debug("update frame {} with step {} s", currentFrame, step);
 
+        sceneManager.beginScene();
         sceneManager.update(step);
 
           /*

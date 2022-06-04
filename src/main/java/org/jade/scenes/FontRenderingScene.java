@@ -268,13 +268,14 @@ public class FontRenderingScene extends AbstractScene {
 
   @Override
   public void render() {
-    shader.use();
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, myString.length() * 6);
-    glBindVertexArray(0);
-    glUseProgram(0);
   }
 
+
+  @Override
+  public void update(double dt) {
+    drawText("eh oh", 400, 20);
+    drawText("For The glory of the 7! Yeah ~~~", 350, 125);
+  }
 
   @Override
   public void imGui() {
