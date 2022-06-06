@@ -241,6 +241,7 @@ public class Window {
       GL30.glViewport(0, 0, w, h);
 
       // re-render during resizing
+      sceneManager.beginScene();
       render();
     });
 
