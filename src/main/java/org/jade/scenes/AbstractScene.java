@@ -21,6 +21,8 @@ public abstract class AbstractScene implements Scene {
 
   protected Entity activeEntity;
 
+  protected Camera camera;
+
   protected final void drawText(String s, float x, float y) {
     TextRenderer.getInstance().addText(s, x, y);
   }
@@ -51,7 +53,7 @@ public abstract class AbstractScene implements Scene {
 
   @Override
   public void setCamera(Camera camera) {
-
+    this.camera = camera;
   }
 
   @Override

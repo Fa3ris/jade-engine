@@ -31,9 +31,11 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import org.jade.MouseListener;
 import org.jade.Window;
 import org.jade.render.shader.Shader;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
@@ -273,8 +275,60 @@ public class FontRenderingScene extends AbstractScene {
 
   @Override
   public void update(double dt) {
-    drawText("eh oh", 400, 20);
-    drawText("For The glory of the 7! Yeah ~~~", 350, 125);
+
+    drawText(camera.toString(), 300, 400);
+
+    float baseY = 320;
+    drawText("mouse x: " + MouseListener.instance.x + " y: " + MouseListener.instance.y, 250, baseY);
+    float inc = 25;
+    baseY += inc;
+
+    drawText(String.format("window w: %.0f h: %.0f", Window.getInstance().getWidth(), Window.getInstance().getHeight()), 0, 20);
+    // Scale to -1;1
+    double normalizedDeviceCoordX = ((MouseListener.instance.x / Window.getInstance().getWidth()) * 2) - 1;
+
+    /* on prend l'opposé car pour glfw les y positifs sont vers le bas
+    et pour opengl les y positifs sont vers le haut
+     */
+    double normalizedDeviceCoordY = 1 - ((MouseListener.instance.y / Window.getInstance().getHeight()) * 2);
+
+    drawText(String.format("mouse ndc x: %.2f y: %.2f", normalizedDeviceCoordX, normalizedDeviceCoordY), 250, baseY);
+
+    baseY += inc;
+
+    Matrix4f projectionMatrix = new Matrix4f();
+    Matrix4f inverseProjection = new Matrix4f();
+
+    projectionMatrix.ortho(0.0f, Window.getInstance().getWidth(),
+        0.0f, Window.getInstance().getHeight(),
+        0.0f, 100.0f);
+    projectionMatrix.invert(inverseProjection);
+
+    /*
+    passer de la position à l'écran vers les coordonnées du monde
+    Des coords de l'écran/viewport [(0,W), (0,H)] aux coords normalisées glPos [(-1,1), (-1,-1)] (normalized device coord)
+    doubled = (x * 2) => in range (0, 2W)
+    doubled and divided = (x * 2) / W => in range (0, 2)
+    doubled and divided and translated = (x*2) / W - 1 => in range (-1, 1)
+
+    glPos = Projection * View * World
+     Projection-1 * glPos = View * World
+     View-1 * Projection-1 * glPos = World
+     glPos [-1,1]
+
+     */
+
+    Vector4f vector4f = new Vector4f((float) normalizedDeviceCoordX, (float) normalizedDeviceCoordY, 0, 0);
+    inverseProjection.transform(vector4f);
+
+    /*
+    l'origine du monde est le centre de la window avec les x positifs vers la droite
+    les y positifs vers le haut
+     */
+    drawText(String.format("world mouse x : %.2f y: %.2f", vector4f.x, vector4f.y), 250, baseY);
+
+
+
   }
 
   @Override
