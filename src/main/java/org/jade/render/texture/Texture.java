@@ -145,4 +145,8 @@ public class Texture {
   public String getName() {
     return path;
   }
+
+  public int getTextureId() {
+    return id;
+  }
 }

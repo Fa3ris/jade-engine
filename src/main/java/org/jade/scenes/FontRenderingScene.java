@@ -21,6 +21,7 @@ import static org.lwjgl.stb.STBTruetype.stbtt_GetFontVMetrics;
 import static org.lwjgl.stb.STBTruetype.stbtt_InitFont;
 
 import imgui.ImGui;
+import imgui.ImVec2;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,6 +35,8 @@ import java.util.Arrays;
 import java.util.List;
 import org.jade.MouseListener;
 import org.jade.Window;
+import org.jade.render.Sprite;
+import org.jade.render.SpriteSheet;
 import org.jade.render.shader.Shader;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -41,6 +44,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTTFontinfo;
+import org.lwjgl.system.CallbackI.I;
 import org.lwjgl.system.MemoryStack;
 
 public class FontRenderingScene extends AbstractScene {
@@ -50,8 +54,13 @@ public class FontRenderingScene extends AbstractScene {
 
   String myString = "For The glory of the 7! Yeah ~~~";
 
+  SpriteSheet spriteSheet;
   @Override
   public void load() {
+
+    spriteSheet = pool.getSpriteSheet("textures/spritesheet.png", 16f, 16f, 0f, 0f);
+    spriteSheet.setTotalSprites(26); // remove empty sprites at the end
+
 
     /*
     ########################################
@@ -349,12 +358,47 @@ public class FontRenderingScene extends AbstractScene {
     inverseProjection.transform(vector4f);
     drawText(String.format("world mouse x 2 : %.2f y: %.2f", vector4f.x, vector4f.y), 250, baseY);
 
-
+    baseY += inc;
+    if (selectedSpriteIndex >=0 ) {
+      drawText("sprite index " + selectedSpriteIndex, 250, baseY);
+    }
   }
 
   @Override
   public void imGui() {
 
     ImGui.text("font rendering scene");
+
+    ImGui.begin("icons");
+
+    ImVec2 imWindowPos = ImGui.getWindowPos();
+    ImVec2 imWindowSize = ImGui.getWindowSize();
+    ImVec2 imWindowSpacing = ImGui.getStyle().getItemSpacing();
+
+    int nbPerRow = (int) (imWindowSize.x / (50 + imWindowSpacing.x));
+    ImGui.text("window size x " + imWindowSize.x);
+    ImGui.text("window spacing x " + imWindowSpacing.x);
+    ImGui.text("nbPerRow = " + nbPerRow);
+    int currentCountOnRow = 0;
+    for (int i = 0; i < spriteSheet.size(); i++) {
+      ImGui.pushID(i);
+      Sprite sprite = spriteSheet.get(i);
+      boolean clicked = ImGui.imageButton(sprite.getTexture().getTextureId(), 50, 50, sprite.getLeftCoord(), sprite.getTopCoord(),
+          sprite.getRightCoord(), sprite.getBottomCoord(),
+          0);
+      if (clicked) {
+        selectedSpriteIndex = i;
+      }
+      ImGui.popID();
+      currentCountOnRow++;
+      if (currentCountOnRow < nbPerRow) {
+          ImGui.sameLine();
+      } else {
+        currentCountOnRow = 0;
+      }
+    }
+    ImGui.end();
   }
+
+  int selectedSpriteIndex = -1;
 }
