@@ -30,6 +30,7 @@ import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.jade.MouseListener;
 import org.jade.Window;
@@ -276,7 +277,7 @@ public class FontRenderingScene extends AbstractScene {
   @Override
   public void update(double dt) {
 
-    drawText(camera.toString(), 300, 400);
+//    drawText(camera.toString(), 300, 400);
 
     float baseY = 320;
     drawText("mouse x: " + MouseListener.instance.x + " y: " + MouseListener.instance.y, 250, baseY);
@@ -299,9 +300,12 @@ public class FontRenderingScene extends AbstractScene {
     Matrix4f projectionMatrix = new Matrix4f();
     Matrix4f inverseProjection = new Matrix4f();
 
+    // le centre du frustum est en (W/2, H/2)
     projectionMatrix.ortho(0.0f, Window.getInstance().getWidth(),
         0.0f, Window.getInstance().getHeight(),
         0.0f, 100.0f);
+    float[] mat1 = new float[16];
+    projectionMatrix.get(mat1);
     projectionMatrix.invert(inverseProjection);
 
     /*
@@ -327,6 +331,23 @@ public class FontRenderingScene extends AbstractScene {
      */
     drawText(String.format("world mouse x : %.2f y: %.2f", vector4f.x, vector4f.y), 250, baseY);
 
+    baseY += inc;
+
+
+    projectionMatrix.identity();
+    float[] id = new float[16];
+    projectionMatrix.get(id);
+    // le centre du frustum est en (0,0)
+    projectionMatrix.ortho(-Window.getInstance().getWidth() / 2, Window.getInstance().getWidth() / 2,
+        -Window.getInstance().getHeight() / 2, Window.getInstance().getHeight()/2,
+        0.0f, 100.0f);
+    float[] mat2 = new float[16];
+    projectionMatrix.get(mat2);
+    projectionMatrix.invert(inverseProjection);
+
+    vector4f.set((float) normalizedDeviceCoordX, (float) normalizedDeviceCoordY, 0, 0);
+    inverseProjection.transform(vector4f);
+    drawText(String.format("world mouse x 2 : %.2f y: %.2f", vector4f.x, vector4f.y), 250, baseY);
 
 
   }
