@@ -1,18 +1,10 @@
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in float aTexId;
+#version 330
 
-out vec2 TexCoord;
-out float TexId;
+in vec3 position;
 
-// uniform mat4 transform;
-//uniform mat4 model;
+//out vec3 colour;
 
-void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-    TexCoord = aTexCoord;
-    TexId = aTexId;
-
+void main(void) {
+    gl_Position = vec4(position.x, -position.y, position.z, 1.0);
+//    colour = vec3(position.x+0.5,0.0,position.y+0.5);
 }

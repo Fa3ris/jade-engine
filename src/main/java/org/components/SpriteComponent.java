@@ -40,7 +40,7 @@ public class SpriteComponent extends Component {
   private final Vector4f bottomRight = new Vector4f(defaultBottomRight);
   private transient static final Vector4f defaultBottomRight = new Vector4f(.5f, -.5f, 0, 1);
 
-  private final SpriteSheet spriteSheet;
+  private final transient SpriteSheet spriteSheet;
 
   private int spriteIndex = -1;
 
@@ -146,7 +146,20 @@ public class SpriteComponent extends Component {
       }
     }
     ImGui.text("JSON data");
-    ImGui.text(Json.toJson(this));
+    String json = Json.toJson(this);
+    String json2 = Json.serializeComponent(this);
+    SpriteComponent c2 = (SpriteComponent) Json.deserializeAsComponent(json2);
+    ImGui.text(json2);
+
+    ImGui.text("JSON data 2");
+    String json3 = Json.serializeComponent(c2);
+
+    if (!json2.equals(json3)) {
+      throw new AssertionError("json are not identical");
+    }
+    ImGui.text(json3);
+
+    SpriteComponent copy = Json.fromJson(json, SpriteComponent.class);
 
     if (updateTransform) {
       transform(new Matrix4f().translate(xTranslate.get(), yTranslate.get(), 0));
